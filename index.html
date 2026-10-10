@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="iPhone 17" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.json" />
+  <title>iPhone 17 Pro Max Simulator</title>
+  <style>
+    :root {
+      --radius: 48px; --island-w: 126px; --island-h: 37px; --status-h: 54px;
+      --accent: #0a84ff; --green: #30d158; --red: #ff453a; --orange: #ff9f0a;
+      --glass: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+    body {
+      background:#050505; min-height:100dvh; display:flex; align-items:center; justify-content:center;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;
+      overflow:hidden; color:#fff;
+    }
+    .phone {
+      position:relative; width:min(390px,96vw); height:min(844px,96dvh);
+      background:#000; border-radius:var(--radius); border:3px solid #2c2c2e;
+      box-shadow:0 0 0 2px #111, 0 25px 60px -12px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.06);
+      overflow:hidden; display:flex; flex-direction:column; transition:border-color .4s, box-shadow .4s;
+    }
+    .phone::before { content:""; position:absolute; left:-4px; top:110px; width:4px; height:28px; background:#2c2c2e; border-radius:2px 0 0 2px; z-index:5; }
+    .phone::after { content:""; position:absolute; right:-4px; top:150px; width:4px; height:80px; background:#2c2c2e; border-radius:0 2px 2px 0; z-index:5; }
+    .screen { flex:1; position:relative; background:#000; overflow:hidden; border-radius:calc(var(--radius) - 4px); margin:4px; }
+
+    /* Liquid Glass helper */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position:absolute; top:11px; left:50%; transform:translateX(-50%);
+      width:var(--island-w); height:var(--island-h); background:#000; border-radius:22px;
+      z-index:200; display:flex; align-items:center; justify-content:center; gap:10px;
+      transition:all .45s cubic-bezier(.4,0,.2,1); box-shadow:0 0 0 1px rgba(255,255,255,.1);
+      overflow:hidden; cursor:pointer;
+    }
+    .dynamic-island.expanded { width:220px; height:80px; border-radius:28px; }
+    .dynamic-island.music { width:250px; height:72px; border-radius:24px; }
+    .dynamic-island.call { width:270px; height:78px; border-radius:26px; background:#1a1a1a; }
+    .island-cam { width:11px; height:11px; background:#1a1a1a; border-radius:50%; border:1.5px solid #333; position:relative; flex-shrink:0; }
+    .island-cam::after { content:""; position:absolute; top:2.5px; left:2.5px; width:4px; height:4px; background:#0a84ff; border-radius:50%; opacity:.7; }
+    .island-sensor { width:7px; height:7px; background:#222; border-radius:50%; flex-shrink:0; }
+    .island-content { display:none; align-items:center; gap:10px; padding:0 14px; width:100%; height:100%; }
+    .dynamic-island.expanded .island-content, .dynamic-island.music .island-content, .dynamic-island.call .island-content { display:flex; }
+    .dynamic-island.expanded .island-cam, .dynamic-island.music .island-cam, .dynamic-island.call .island-cam,
+    .dynamic-island.expanded .island-sensor, .dynamic-island.music .island-sensor, .dynamic-island.call .island-sensor { display:none; }
+    .island-music-art { width:44px; height:44px; border-radius:8px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .island-music-info { flex:1; overflow:hidden; }
+    .island-music-info .title { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .island-music-info .artist { font-size:11px; opacity:.7; }
+    .island-controls { display:flex; gap:12px; font-size:16px; }
+    .island-call-info { flex:1; text-align:center; }
+    .island-call-info .name { font-size:15px; font-weight:600; }
+    .island-call-info .status { font-size:12px; opacity:.7; }
+    .island-call-btns { display:flex; gap:16px; }
+    .island-call-btn { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .island-call-btn.accept { background:var(--green); }
+    .island-call-btn.decline { background:var(--red); }
+
+    /* Status Bar */
+    .status-bar {
+      position:absolute; top:0; left:0; right:0; height:var(--status-h);
+      display:flex; justify-content:space-between; align-items:flex-end;
+      padding:0 26px 8px; z-index:150; font-size:15px; font-weight:600; letter-spacing:-.3px; pointer-events:none;
+    }
+    .status-right { display:flex; align-items:center; gap:5px; }
+    .battery { width:25px; height:12px; border:1.5px solid rgba(255,255,255,.9); border-radius:3px; position:relative; padding:1px; }
+    .battery::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:5px; background:rgba(255,255,255,.9); border-radius:0 1px 1px 0; }
+    .battery-level { height:100%; width:78%; background:var(--green); border-radius:1px; transition:width .3s; }
+    .battery-level.low { background:var(--red); }
+
+    /* Face ID Overlay */
+    .faceid-overlay {
+      position:absolute; inset:0; z-index:220; background:rgba(0,0,0,.85);
+      display:none; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+    }
+    .faceid-overlay.show { display:flex; }
+    .faceid-ring {
+      width:90px; height:90px; border-radius:50%; border:3px solid rgba(255,255,255,.2);
+      position:relative; display:flex; align-items:center; justify-content:center;
+    }
+    .faceid-ring.scanning { border-color:var(--green); animation:faceScan 1.2s ease-in-out; }
+    .faceid-ring.success { border-color:var(--green); }
+    .faceid-icon { font-size:42px; transition:transform .3s; }
+    .faceid-ring.scanning .faceid-icon { transform:scale(1.1); }
+    @keyframes faceScan {
+      0% { box-shadow:0 0 0 0 rgba(48,209,88,.4); }
+      50% { box-shadow:0 0 0 20px rgba(48,209,88,0); }
+      100% { box-shadow:0 0 0 0 rgba(48,209,88,0); }
+    }
+    .faceid-text { font-size:16px; opacity:.9; }
+
+    /* Lock Screen */
+    .lock-screen {
+      position:absolute; inset:0; z-index:40;
+      background: linear-gradient(165deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
+      display:flex; flex-direction:column; align-items:center;
+      transition: transform .55s cubic-bezier(.4,0,.2,1), opacity .4s;
+    }
+    .lock-screen.unlocked { transform:translateY(-110%); opacity:0; pointer-events:none; }
+    .lock-screen.aod { background:#000; }
+    .lock-screen.aod .lock-widgets, .lock-screen.aod .lock-bottom { opacity:0; pointer-events:none; }
+    .lock-screen.aod .lock-time { font-size:72px; opacity:.55; margin-top:120px; }
+    .lock-screen.aod .lock-date { opacity:.35; }
+    .lock-time { margin-top:88px; font-size:84px; font-weight:200; letter-spacing:-2px; line-height:1; transition:all .4s; }
+    .lock-date { font-size:19px; font-weight:400; opacity:.95; margin-top:2px; }
+    .lock-widgets { margin-top:36px; display:flex; gap:12px; padding:0 18px; width:100%; justify-content:center; transition:opacity .3s; }
+    .widget {
+      background:rgba(255,255,255,.12); backdrop-filter:blur(30px) saturate(160%);
+      border-radius:22px; padding:14px 16px; min-width:148px; border:1px solid rgba(255,255,255,.1);
+    }
+    .widget-title { font-size:12px; opacity:.75; margin-bottom:3px; }
+    .widget-value { font-size:22px; font-weight:600; }
+    .widget-sub { font-size:12px; opacity:.6; margin-top:2px; }
+    .lock-bottom { margin-top:auto; margin-bottom:36px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; transition:opacity .3s; }
+    .lock-buttons { display:flex; justify-content:space-between; width:100%; padding:0 38px; }
+    .lock-btn {
+      width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.14);
+      backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center;
+      font-size:22px; border:1px solid rgba(255,255,255,.1); transition:transform .15s;
+    }
+    .lock-btn:active { transform:scale(.88); }
+    .swipe-hint { font-size:13px; opacity:.65; animation:pulse 2.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:.45} 50%{opacity:.9} }
+
+    /* Home Screen */
+    .home-screen {
+      position:absolute; inset:0; z-index:30;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 45%, #0f3460 100%);
+      display:flex; flex-direction:column; padding-top:58px; transition:background .5s;
+    }
+    .pages-container { flex:1; overflow:hidden; position:relative; }
+    .pages-track { display:flex; height:100%; transition:transform .35s cubic-bezier(.4,0,.2,1); }
+    .page {
+      min-width:100%; padding:8px 14px 0;
+      display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:min-content; gap:14px 6px;
+      align-content:start;
+    }
+    .page.widgets-page {
+      display:flex; flex-direction:column; gap:12px; padding:12px 16px;
+    }
+    .home-widget {
+      border-radius:22px; padding:16px; background:rgba(255,255,255,.12);
+      backdrop-filter:blur(30px) saturate(160%); border:1px solid rgba(255,255,255,.1);
+    }
+    .home-widget.large { min-height:140px; }
+    .home-widget.medium { min-height:90px; }
+    .hw-title { font-size:13px; opacity:.7; margin-bottom:6px; }
+    .hw-value { font-size:28px; font-weight:600; }
+    .hw-row { display:flex; gap:10px; }
+    .app { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; position:relative; }
+    .app-icon {
+      width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+      font-size:28px; box-shadow:0 4px 14px rgba(0,0,0,.3); transition:transform .15s;
+    }
+    .app:active .app-icon { transform:scale(.86); }
+    .app-name { font-size:11px; font-weight:500; text-align:center; max-width:68px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+    .folder-badge {
+      position:absolute; top:-2px; right:8px; background:rgba(255,255,255,.25); font-size:9px;
+      width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    }
+    .page-dots { display:flex; justify-content:center; gap:7px; padding:6px 0 4px; }
+    .dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.3); transition:all .25s; }
+    .dot.active { background:#fff; width:8px; height:8px; }
+    .dock {
+      margin:4px 14px 10px; background:rgba(255,255,255,.16); backdrop-filter:blur(30px) saturate(180%);
+      border-radius:28px; padding:11px 16px; display:flex; justify-content:space-around;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .dock .app-icon { width:54px; height:54px; border-radius:13px; }
+
+    /* Mini Music Bar */
+    .mini-player {
+      position:absolute; bottom:52px; left:14px; right:14px; z-index:140;
+      background:rgba(30,30,30,.85); backdrop-filter:blur(30px) saturate(180%);
+      border-radius:16px; padding:10px 14px; display:none; align-items:center; gap:12px;
+      border:1px solid rgba(255,255,255,.1); cursor:pointer;
+    }
+    .mini-player.show { display:flex; }
+    .mini-art { width:40px; height:40px; border-radius:8px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .mini-info { flex:1; overflow:hidden; }
+    .mini-info .t { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mini-info .a { font-size:11px; opacity:.65; }
+    .mini-ctrl { font-size:18px; padding:4px; }
+
+    .home-indicator {
+      position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+      width:134px; height:5px; background:rgba(255,255,255,.35); border-radius:3px; z-index:250;
+    }
+
+    /* Control Center */
+    .control-center {
+      position:absolute; inset:0; z-index:180; background:rgba(0,0,0,.5); backdrop-filter:blur(50px) saturate(180%);
+      display:flex; flex-direction:column; padding:70px 18px 40px;
+      transform:translateY(-110%); opacity:0; transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s;
+      pointer-events:none;
+    }
+    .control-center.open { transform:translateY(0); opacity:1; pointer-events:auto; }
+    .cc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .cc-card {
+      background:rgba(255,255,255,.12); border-radius:20px; padding:16px;
+      border:1px solid rgba(255,255,255,.1); display:flex; flex-direction:column; gap:10px;
+      backdrop-filter:blur(20px);
+    }
+    .cc-card.wide { grid-column:span 2; }
+    .cc-row { display:flex; gap:12px; }
+    .cc-btn {
+      width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center; font-size:20px; transition:all .2s;
+      border:none; color:#fff; cursor:pointer;
+    }
+    .cc-btn.active { background:var(--accent); }
+    .cc-btn.green.active { background:var(--green); }
+    .cc-label { font-size:12px; opacity:.8; }
+    .cc-slider-wrap { display:flex; align-items:center; gap:10px; }
+    .cc-slider { flex:1; -webkit-appearance:none; height:6px; border-radius:3px; background:rgba(255,255,255,.2); outline:none; }
+    .cc-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; cursor:pointer; }
+    .cc-music { display:flex; align-items:center; gap:12px; }
+    .cc-music-art { width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .cc-music-info { flex:1; }
+    .cc-music-info .t { font-size:14px; font-weight:600; }
+    .cc-music-info .a { font-size:12px; opacity:.7; }
+
+    /* Notification Center */
+    .notif-center {
+      position:absolute; inset:0; z-index:180; background:rgba(0,0,0,.5); backdrop-filter:blur(50px) saturate(180%);
+      display:flex; flex-direction:column; padding:70px 16px 40px;
+      transform:translateY(-110%); opacity:0; transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s;
+      pointer-events:none; overflow-y:auto;
+    }
+    .notif-center.open { transform:translateY(0); opacity:1; pointer-events:auto; }
+    .notif-header { font-size:28px; font-weight:700; margin-bottom:16px; padding:0 4px; }
+    .notif-card {
+      background:rgba(255,255,255,.12); border-radius:18px; padding:14px 16px; margin-bottom:10px;
+      border:1px solid rgba(255,255,255,.1); display:flex; gap:12px; align-items:flex-start;
+      transition:transform .2s, opacity .2s; backdrop-filter:blur(20px);
+    }
+    .notif-card.removing { transform:translateX(-120%); opacity:0; }
+    .notif-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .notif-body { flex:1; }
+    .notif-app { font-size:13px; font-weight:600; margin-bottom:2px; }
+    .notif-text { font-size:14px; opacity:.85; line-height:1.35; }
+    .notif-time { font-size:11px; opacity:.5; margin-top:4px; }
+    .notif-clear { text-align:center; margin-top:12px; font-size:15px; color:var(--accent); padding:10px; cursor:pointer; }
+
+    /* Spotlight */
+    .spotlight {
+      position:absolute; inset:0; z-index:175; background:rgba(0,0,0,.65); backdrop-filter:blur(40px);
+      display:flex; flex-direction:column; padding:70px 18px 20px;
+      transform:translateY(30%); opacity:0; transition:all .35s cubic-bezier(.4,0,.2,1); pointer-events:none;
+    }
+    .spotlight.open { transform:translateY(0); opacity:1; pointer-events:auto; }
+    .spotlight-input {
+      width:100%; padding:14px 18px; border-radius:14px; border:none; background:rgba(255,255,255,.15);
+      color:#fff; font-size:17px; outline:none; direction:rtl;
+    }
+    .spotlight-input::placeholder { color:rgba(255,255,255,.45); }
+    .spotlight-results { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .spotlight-item {
+      display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px;
+      background:rgba(255,255,255,.08); cursor:pointer;
+    }
+
+    /* App View */
+    .app-view {
+      position:absolute; inset:0; z-index:160; background:#000;
+      display:none; flex-direction:column; transform:scale(.92); opacity:0;
+      transition:all .32s cubic-bezier(.4,0,.2,1);
+    }
+    .app-view.open { display:flex; transform:scale(1); opacity:1; }
+    .app-header {
+      padding:58px 16px 14px; display:flex; align-items:center; gap:12px;
+      background:rgba(28,28,30,.92); backdrop-filter:blur(30px); flex-shrink:0;
+    }
+    .back-btn {
+      width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center; font-size:17px; cursor:pointer;
+    }
+    .app-title { font-size:17px; font-weight:600; }
+    .app-content { flex:1; padding:20px 16px; overflow-y:auto; font-size:15px; line-height:1.5; color:#e5e5ea; }
+    .app-content h2 { font-size:22px; margin-bottom:12px; color:#fff; }
+    .spec-card {
+      background:#1c1c1e; border-radius:14px; padding:14px; margin-bottom:10px; border:1px solid #2c2c2e;
+    }
+    .spec-card strong { color:var(--accent); display:block; margin-bottom:3px; font-size:12px; }
+
+    /* Camera */
+    .camera-app { background:#000; }
+    .camera-viewfinder {
+      flex:1; background:#111; display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    #camVideo { width:100%; height:100%; object-fit:cover; display:none; }
+    .camera-grid { position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr 1fr; opacity:.2; pointer-events:none; }
+    .camera-grid div { border:1px solid rgba(255,255,255,.5); }
+    .camera-zoom { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:5; }
+    .zoom-btn {
+      padding:6px 12px; border-radius:20px; background:rgba(0,0,0,.55); font-size:13px; font-weight:600;
+      border:1px solid rgba(255,255,255,.25); color:#fff; cursor:pointer;
+    }
+    .zoom-btn.active { background:rgba(255,255,255,.9); color:#000; }
+    .camera-controls { padding:16px 20px 30px; display:flex; justify-content:space-around; align-items:center; background:#111; }
+    .cam-mode { font-size:13px; opacity:.5; padding:4px 8px; cursor:pointer; }
+    .cam-mode.active { opacity:1; font-weight:600; color:var(--orange); }
+    .shutter { width:72px; height:72px; border-radius:50%; border:4px solid #fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .shutter-inner { width:60px; height:60px; border-radius:50%; background:#fff; transition:transform .1s; }
+    .shutter:active .shutter-inner { transform:scale(.85); }
+    .cam-switch, .cam-flash { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; }
+
+    /* App Switcher */
+    .app-switcher {
+      position:absolute; inset:0; z-index:190; background:rgba(0,0,0,.7); backdrop-filter:blur(40px);
+      display:flex; align-items:center; justify-content:center; gap:16px; padding:40px 20px;
+      opacity:0; pointer-events:none; transition:opacity .3s; overflow-x:auto;
+    }
+    .app-switcher.open { opacity:1; pointer-events:auto; }
+    .switcher-card {
+      min-width:200px; height:360px; border-radius:24px; background:#1c1c1e;
+      border:1px solid #333; display:flex; flex-direction:column; overflow:hidden;
+      transform:scale(.9); transition:transform .25s; cursor:pointer; flex-shrink:0;
+    }
+    .switcher-card:active { transform:scale(.95); }
+    .switcher-card-header { padding:12px; font-size:13px; font-weight:600; background:#2c2c2e; }
+    .switcher-card-body { flex:1; display:flex; align-items:center; justify-content:center; font-size:40px; }
+
+    /* Folder Modal */
+    .folder-modal {
+      position:absolute; inset:0; z-index:170; background:rgba(0,0,0,.6); backdrop-filter:blur(30px);
+      display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px;
+    }
+    .folder-modal.open { display:flex; }
+    .folder-box {
+      background:rgba(40,40,40,.9); border-radius:28px; padding:20px; width:100%; max-width:300px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .folder-name { text-align:center; font-size:17px; font-weight:600; margin-bottom:16px; }
+    .folder-apps { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; justify-items:center; }
+    .folder-close { margin-top:16px; text-align:center; color:var(--accent); font-size:15px; cursor:pointer; }
+
+    /* Color Picker */
+    .color-picker {
+      position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
+      display:flex; gap:12px; z-index:70; background:rgba(0,0,0,.55);
+      padding:10px 16px; border-radius:30px; backdrop-filter:blur(12px);
+    }
+    .color-dot { width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:transform .2s; }
+    .color-dot.active { border-color:#fff; transform:scale(1.18); }
+    .color-silver { background:linear-gradient(135deg,#e8e8e8,#a0a0a0); }
+    .color-orange { background:linear-gradient(135deg,#ff6b35,#e85d04); }
+    .color-blue { background:linear-gradient(135deg,#1e3a5f,#0d1b2a); }
+
+    .toast {
+      position:absolute; top:70px; left:50%; transform:translateX(-50%) translateY(-20px);
+      background:rgba(30,30,30,.92); backdrop-filter:blur(12px); padding:10px 20px;
+      border-radius:20px; font-size:14px; z-index:300; opacity:0; transition:all .3s;
+      pointer-events:none; border:1px solid rgba(255,255,255,.1);
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* Landscape */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .phone { width:min(100vw, 700px); height:min(100dvh, 380px); border-radius:28px; }
+      .lock-time { font-size:48px; margin-top:40px; }
+      .page { gap:8px 4px; }
+      .app-icon { width:44px; height:44px; font-size:20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone" id="phone">
+    <div class="screen" id="screen">
+      <!-- Dynamic Island -->
+      <div class="dynamic-island" id="island" onclick="toggleIsland()">
+        <div class="island-cam"></div>
+        <div class="island-sensor"></div>
+        <div class="island-content" id="islandContent"></div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <div class="status-left"><span id="statusTime">9:41</span></div>
+        <div class="status-right">
+          <span style="font-size:12px">5G</span>
+          <span style="letter-spacing:-1px">●●●●</span>
+          <span>◉</span>
+          <div class="battery"><div class="battery-level" id="battLevel"></div></div>
+        </div>
+      </div>
+
+      <!-- Face ID -->
+      <div class="faceid-overlay" id="faceId">
+        <div class="faceid-ring" id="faceRing">
+          <div class="faceid-icon">😊</div>
+        </div>
+        <div class="faceid-text" id="faceText">Face ID</div>
+      </div>
+
+      <!-- Lock Screen -->
+      <div class="lock-screen" id="lockScreen">
+        <div class="lock-time" id="lockTime">9:41</div>
+        <div class="lock-date" id="lockDate">الجمعة، ٩ أكتوبر</div>
+        <div class="lock-widgets">
+          <div class="widget">
+            <div class="widget-title">الطقس</div>
+            <div class="widget-value">٢٤°</div>
+            <div class="widget-sub">مشمس جزئياً</div>
+          </div>
+          <div class="widget">
+            <div class="widget-title">البطارية</div>
+            <div class="widget-value" id="lockBatt">٧٨٪</div>
+            <div class="widget-sub">شحن عادي</div>
+          </div>
+        </div>
+        <div class="lock-bottom">
+          <div class="lock-buttons">
+            <div class="lock-btn" onclick="event.stopPropagation();toggleFlash()">🔦</div>
+            <div class="lock-btn" onclick="event.stopPropagation();openCameraFromLock()">📷</div>
+          </div>
+          <div class="swipe-hint">اسحب للأعلى أو اضغط · Face ID</div>
+        </div>
+      </div>
+
+      <!-- Home Screen -->
+      <div class="home-screen" id="homeScreen">
+        <div class="pages-container">
+          <div class="pages-track" id="pagesTrack">
+            <!-- Page 1 -->
+            <div class="page" id="page1">
+              <div class="app" data-app="phone"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📞</div><div class="app-name">الهاتف</div></div>
+              <div class="app" data-app="safari"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🧭</div><div class="app-name">Safari</div></div>
+              <div class="app" data-app="messages"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">💬</div><div class="app-name">الرسائل</div></div>
+              <div class="app" data-app="mail"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">✉️</div><div class="app-name">البريد</div></div>
+              <div class="app" data-app="camera"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">📷</div><div class="app-name">الكاميرا</div></div>
+              <div class="app" data-app="photos"><div class="app-icon" style="background:linear-gradient(135deg,#ff9500,#ff2d55,#5856d6)">🖼️</div><div class="app-name">الصور</div></div>
+              <div class="app" data-app="settings"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">⚙️</div><div class="app-name">الإعدادات</div></div>
+              <div class="app" data-app="music"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎵</div><div class="app-name">الموسيقى</div></div>
+              <div class="app" data-app="maps"><div class="app-icon" style="background:linear-gradient(135deg,#64d2ff,#0a84ff)">🗺️</div><div class="app-name">الخرائط</div></div>
+              <div class="app" data-app="wallet"><div class="app-icon" style="background:linear-gradient(135deg,#111,#222);border:1px solid #333">💳</div><div class="app-name">المحفظة</div></div>
+              <div class="app" data-app="clock"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">🕐</div><div class="app-name">الساعة</div></div>
+              <div class="app" data-app="notes"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">📝</div><div class="app-name">الملاحظات</div></div>
+              <div class="app" data-app="calculator"><div class="app-icon" style="background:#1c1c1e">🔢</div><div class="app-name">الحاسبة</div></div>
+              <div class="app" data-app="weather"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🌤️</div><div class="app-name">الطقس</div></div>
+              <div class="app" data-app="appstore"><div class="app-icon" style="background:linear-gradient(135deg,#0a84ff,#5e5ce6)">🍎</div><div class="app-name">App Store</div></div>
+              <div class="app" data-app="about"><div class="app-icon" style="background:linear-gradient(135deg,#ff6b35,#e85d04)">ℹ️</div><div class="app-name">حول الجهاز</div></div>
+            </div>
+            <!-- Page 2 -->
+            <div class="page">
+              <div class="app" data-app="files"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">📁</div><div class="app-name">الملفات</div></div>
+              <div class="app" data-app="health"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">❤️</div><div class="app-name">صحتي</div></div>
+              <div class="app" data-app="home"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">🏠</div><div class="app-name">المنزل</div></div>
+              <div class="app" data-app="translate"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🌐</div><div class="app-name">ترجمة</div></div>
+              <div class="app" data-app="tips"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">💡</div><div class="app-name">نصائح</div></div>
+              <div class="app" data-app="books"><div class="app-icon" style="background:linear-gradient(135deg,#ff9500,#ff6b35)">📚</div><div class="app-name">الكتب</div></div>
+              <div class="app" data-app="podcasts"><div class="app-icon" style="background:linear-gradient(135deg,#bf5af2,#9b59b6)">🎙️</div><div class="app-name">البودكاست</div></div>
+              <div class="app" data-app="tv"><div class="app-icon" style="background:linear-gradient(135deg,#111,#333)">📺</div><div class="app-name">TV</div></div>
+              <div class="app" data-app="fitness"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">💪</div><div class="app-name">اللياقة</div></div>
+              <div class="app" data-app="findmy"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📍</div><div class="app-name">Find My</div></div>
+              <div class="app" data-app="measure"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">📏</div><div class="app-name">القياس</div></div>
+              <div class="app" data-app="compass"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">🧭</div><div class="app-name">البوصلة</div></div>
+              <div class="app" data-app="voice"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎤</div><div class="app-name">المذكرات</div></div>
+              <div class="app" data-app="contacts"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">👤</div><div class="app-name">جهات الاتصال</div></div>
+              <div class="app" data-app="calendar"><div class="app-icon" style="background:#fff;color:#ff3b30;font-weight:700;font-size:20px">٩</div><div class="app-name">التقويم</div></div>
+              <div class="app" data-app="reminders"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">✅</div><div class="app-name">التذكيرات</div></div>
+            </div>
+            <!-- Page 3 - Widgets -->
+            <div class="page widgets-page">
+              <div class="home-widget large">
+                <div class="hw-title">الطقس · الرياض</div>
+                <div class="hw-value">٢٤°</div>
+                <div style="opacity:.7;margin-top:4px">مشمس جزئياً · رطوبة ٤٥٪</div>
+              </div>
+              <div class="hw-row">
+                <div class="home-widget medium" style="flex:1">
+                  <div class="hw-title">البطارية</div>
+                  <div class="hw-value" id="widgetBatt">٧٨٪</div>
+                </div>
+                <div class="home-widget medium" style="flex:1">
+                  <div class="hw-title">الخطوات</div>
+                  <div class="hw-value">٣٬٢٤١</div>
+                </div>
+              </div>
+              <div class="home-widget medium">
+                <div class="hw-title">التقويم</div>
+                <div style="font-size:15px;margin-top:4px">لا توجد أحداث اليوم</div>
+              </div>
+              <div class="home-widget medium">
+                <div class="hw-title">الموسيقى</div>
+                <div style="font-size:15px;margin-top:4px">اضغط تشغيل من Control Center</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="page-dots">
+          <div class="dot active" data-page="0"></div>
+          <div class="dot" data-page="1"></div>
+          <div class="dot" data-page="2"></div>
+        </div>
+        <div class="dock">
+          <div class="app" data-app="phone"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📞</div></div>
+          <div class="app" data-app="safari"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🧭</div></div>
+          <div class="app" data-app="messages"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">💬</div></div>
+          <div class="app" data-app="music"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎵</div></div>
+        </div>
+      </div>
+
+      <!-- Mini Player -->
+      <div class="mini-player" id="miniPlayer" onclick="toggleMusic()">
+        <div class="mini-art">🎵</div>
+        <div class="mini-info">
+          <div class="t">أغنية تجريبية</div>
+          <div class="a">فنان تجريبي</div>
+        </div>
+        <div class="mini-ctrl" id="miniPlayIcon">⏸</div>
+      </div>
+
+      <!-- Control Center -->
+      <div class="control-center" id="controlCenter">
+        <div class="cc-grid">
+          <div class="cc-card">
+            <div class="cc-row">
+              <button class="cc-btn active" onclick="toggleCC(this)">📶</button>
+              <button class="cc-btn active" onclick="toggleCC(this)">🅱️</button>
+            </div>
+            <div class="cc-row">
+              <button class="cc-btn" onclick="toggleCC(this)">✈️</button>
+              <button class="cc-btn green" onclick="toggleCC(this)">📡</button>
+            </div>
+            <div class="cc-label">الشبكة</div>
+          </div>
+          <div class="cc-card">
+            <div class="cc-music">
+              <div class="cc-music-art">🎵</div>
+              <div class="cc-music-info">
+                <div class="t" id="ccTrack">Not Playing</div>
+                <div class="a" id="ccArtist">اضغط للتشغيل</div>
+              </div>
+            </div>
+            <div class="cc-row" style="justify-content:center;gap:20px;margin-top:4px">
+              <span onclick="prevTrack()" style="font-size:18px;cursor:pointer">⏮</span>
+              <span onclick="toggleMusic()" style="font-size:22px;cursor:pointer" id="ccPlayBtn">▶️</span>
+              <span onclick="nextTrack()" style="font-size:18px;cursor:pointer">⏭</span>
+            </div>
+          </div>
+          <div class="cc-card wide">
+            <div class="cc-slider-wrap">
+              <span>☀️</span>
+              <input type="range" class="cc-slider" min="10" max="100" value="80" oninput="setBrightness(this.value)">
+            </div>
+          </div>
+          <div class="cc-card wide">
+            <div class="cc-slider-wrap">
+              <span>🔊</span>
+              <input type="range" class="cc-slider" min="0" max="100" value="60">
+            </div>
+          </div>
+          <div class="cc-card">
+            <div class="cc-row" style="justify-content:center;gap:16px">
+              <button class="cc-btn" onclick="toggleFlashCC(this)">🔦</button>
+              <button class="cc-btn" onclick="startTimer()">⏱️</button>
+            </div>
+            <div class="cc-label" style="text-align:center">فلاش · مؤقت</div>
+          </div>
+          <div class="cc-card">
+            <div class="cc-row" style="justify-content:center;gap:16px">
+              <button class="cc-btn" onclick="toggleCC(this)">🌙</button>
+              <button class="cc-btn" onclick="simulateCall()">📞</button>
+            </div>
+            <div class="cc-label" style="text-align:center">تركيز · مكالمة</div>
+          </div>
+          <div class="cc-card wide">
+            <div class="cc-row" style="justify-content:space-around">
+              <button class="cc-btn" onclick="toggleCC(this)">⏺️</button>
+              <button class="cc-btn" onclick="toggleCC(this)">🪞</button>
+              <button class="cc-btn" onclick="toggleCC(this)">🔋</button>
+              <button class="cc-btn" onclick="lockDevice()">🔒</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="notif-center" id="notifCenter">
+        <div class="notif-header">الإشعارات</div>
+        <div id="notifList"></div>
+        <div class="notif-clear" onclick="clearNotifs()">مسح الكل</div>
+      </div>
+
+      <!-- Spotlight -->
+      <div class="spotlight" id="spotlight">
+        <input class="spotlight-input" id="spotlightInput" placeholder="بحث في iPhone..." oninput="searchApps(this.value)">
+        <div class="spotlight-results" id="spotlightResults"></div>
+      </div>
+
+      <!-- App View -->
+      <div class="app-view" id="appView">
+        <div class="app-header">
+          <div class="back-btn" onclick="closeApp()">←</div>
+          <div class="app-title" id="appTitle">التطبيق</div>
+        </div>
+        <div class="app-content" id="appContent"></div>
+      </div>
+
+      <!-- Camera -->
+      <div class="app-view camera-app" id="cameraApp">
+        <div class="camera-viewfinder" id="viewfinder">
+          <video id="camVideo" playsinline autoplay muted></video>
+          <div class="camera-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+          <div id="camPlaceholder" style="font-size:48px;opacity:.3;position:absolute">📷</div>
+          <div class="camera-zoom">
+            <div class="zoom-btn" data-z="0.5" onclick="setZoom(this)">0.5</div>
+            <div class="zoom-btn active" data-z="1" onclick="setZoom(this)">1×</div>
+            <div class="zoom-btn" data-z="2" onclick="setZoom(this)">2</div>
+            <div class="zoom-btn" data-z="4" onclick="setZoom(this)">4</div>
+            <div class="zoom-btn" data-z="8" onclick="setZoom(this)">8</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;padding:8px;background:#111">
+          <span class="cam-mode" onclick="setCamMode(this)">سينمائي</span>
+          <span class="cam-mode" onclick="setCamMode(this)">فيديو</span>
+          <span class="cam-mode active" onclick="setCamMode(this)">صورة</span>
+          <span class="cam-mode" onclick="setCamMode(this)">بورتريه</span>
+          <span class="cam-mode" onclick="setCamMode(this)">بانوراما</span>
+        </div>
+        <div class="camera-controls">
+          <div class="cam-flash" onclick="toggleCamFlash(this)">⚡️</div>
+          <div class="shutter" onclick="takePhoto()"><div class="shutter-inner"></div></div>
+          <div class="cam-switch" onclick="flipCam()">🔄</div>
+        </div>
+        <div style="position:absolute;top:58px;left:16px;z-index:10">
+          <div class="back-btn" onclick="closeCamera()" style="background:rgba(0,0,0,.5)">←</div>
+        </div>
+      </div>
+
+      <!-- App Switcher -->
+      <div class="app-switcher" id="appSwitcher" onclick="closeSwitcher(event)">
+        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('safari')"><div class="switcher-card-header">Safari</div><div class="switcher-card-body">🧭</div></div>
+        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('messages')"><div class="switcher-card-header">الرسائل</div><div class="switcher-card-body">💬</div></div>
+        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('music')"><div class="switcher-card-header">الموسيقى</div><div class="switcher-card-body">🎵</div></div>
+        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('settings')"><div class="switcher-card-header">الإعدادات</div><div class="switcher-card-body">⚙️</div></div>
+      </div>
+
+      <!-- Folder Modal -->
+      <div class="folder-modal" id="folderModal" onclick="closeFolder(event)">
+        <div class="folder-box" onclick="event.stopPropagation()">
+          <div class="folder-name" id="folderName">مجلد</div>
+          <div class="folder-apps" id="folderApps"></div>
+          <div class="folder-close" onclick="closeFolder()">إغلاق</div>
+        </div>
+      </div>
+
+      <div class="home-indicator"></div>
+
+      <div class="color-picker" id="colorPicker">
+        <div class="color-dot color-silver active" data-c="silver" onclick="changeColor('silver')"></div>
+        <div class="color-dot color-orange" data-c="orange" onclick="changeColor('orange')"></div>
+        <div class="color-dot color-blue" data-c="blue" onclick="changeColor('blue')"></div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+  <script>
+    let unlocked=false, currentPage=0, musicPlaying=false, flashOn=false, aodTimeout=null, islandMode=null;
+    let startY=0, startX=0, longPressTimer=null, camStream=null, facingMode='environment';
+    const MAX_PAGES=2;
+
+    const appData = {
+      phone:{title:'الهاتف',html:'<h2>المكالمات الأخيرة</h2><div class="spec-card"><strong>اليوم</strong>لا توجد مكالمات</div>'},
+      safari:{title:'Safari',html:'<h2>Safari</h2><div class="spec-card"><strong>المفضلة</strong>apple.com<br>google.com</div>'},
+      messages:{title:'الرسائل',html:'<h2>الرسائل</h2><div class="spec-card"><strong>أحمد</strong>مرحبا! كيف حالك؟</div>'},
+      mail:{title:'البريد',html:'<h2>البريد</h2><div class="spec-card"><strong>Apple</strong>فاتورتك جاهزة</div>'},
+      photos:{title:'الصور',html:'<h2>الصور</h2><div class="spec-card"><strong>المكتبة</strong>٠ صورة</div>'},
+      settings:{title:'الإعدادات',html:'<h2>الإعدادات</h2><div class="spec-card"><strong>عام</strong>حول · تحديث</div><div class="spec-card"><strong>العرض</strong>True Tone · Always-On</div><div class="spec-card"><strong>البطارية</strong>وضع الطاقة</div><div class="spec-card"><strong>الخصوصية</strong>Face ID</div>'},
+      music:{title:'الموسيقى',html:'<h2>Apple Music</h2><div class="spec-card"><strong>تشغيل</strong>من Control Center أو الشريط السفلي</div>'},
+      maps:{title:'الخرائط',html:'<h2>الخرائط</h2>'},
+      wallet:{title:'المحفظة',html:'<h2>المحفظة</h2>'},
+      clock:{title:'الساعة',html:'<h2>الساعة</h2><div class="spec-card"><strong>الرياض</strong><span id="clockLocal"></span></div>'},
+      notes:{title:'الملاحظات',html:'<h2>الملاحظات</h2>'},
+      calculator:{title:'الحاسبة',html:'<h2>الحاسبة</h2><div class="spec-card" style="font-size:32px;text-align:left;direction:ltr;padding:20px" id="calcDisplay">0</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px" id="calcBtns"></div>'},
+      weather:{title:'الطقس',html:'<h2>الرياض</h2><div class="spec-card"><strong>الآن</strong>٢٤°</div>'},
+      appstore:{title:'App Store',html:'<h2>App Store</h2>'},
+      about:{title:'حول iPhone 17 Pro Max',html:'<h2>iPhone 17 Pro Max</h2><div class="spec-card"><strong>الشاشة</strong>6.9″ Super Retina XDR · 2868×1320 · 120Hz · Dynamic Island · Always-On · 3000 nit</div><div class="spec-card"><strong>المعالج</strong>A19 Pro (3nm)</div><div class="spec-card"><strong>الذاكرة</strong>12GB · حتى 2TB</div><div class="spec-card"><strong>الكاميرات</strong>48MP Fusion ×3 · 18MP · LiDAR</div><div class="spec-card"><strong>البطارية</strong>حتى 39 ساعة فيديو</div><div class="spec-card"><strong>الأبعاد</strong>163.4×78×8.75 مم · 233g</div><div class="spec-card"><strong>الألوان</strong>Silver · Cosmic Orange · Deep Blue</div><div class="spec-card"><strong>النظام</strong>iOS 26</div><p style="margin-top:12px;opacity:.5;font-size:12px;text-align:center">محاكاة غير رسمية · PWA</p>'},
+      files:{title:'الملفات',html:'<h2>الملفات</h2>'}, health:{title:'صحتي',html:'<h2>صحتي</h2>'}, home:{title:'المنزل',html:'<h2>المنزل</h2>'},
+      translate:{title:'ترجمة',html:'<h2>ترجمة</h2>'}, tips:{title:'نصائح',html:'<h2>نصائح</h2><div class="spec-card"><strong>Face ID</strong>اضغط على شاشة القفل</div><div class="spec-card"><strong>Control Center</strong>اسحب من أعلى اليمين</div><div class="spec-card"><strong>المجلدات</strong>اضغط مطولاً على أيقونة</div>'},
+      books:{title:'الكتب',html:'<h2>الكتب</h2>'}, podcasts:{title:'البودكاست',html:'<h2>البودكاست</h2>'}, tv:{title:'TV',html:'<h2>TV</h2>'},
+      fitness:{title:'اللياقة',html:'<h2>اللياقة</h2>'}, findmy:{title:'Find My',html:'<h2>Find My</h2>'}, measure:{title:'القياس',html:'<h2>القياس</h2>'},
+      compass:{title:'البوصلة',html:'<h2>البوصلة</h2><div class="spec-card" style="text-align:center;font-size:48px">🧭</div>'},
+      voice:{title:'المذكرات',html:'<h2>المذكرات الصوتية</h2>'}, contacts:{title:'جهات الاتصال',html:'<h2>جهات الاتصال</h2>'},
+      calendar:{title:'التقويم',html:'<h2>التقويم</h2>'}, reminders:{title:'التذكيرات',html:'<h2>التذكيرات</h2>'},
+    };
+
+    // Sounds via Web Audio
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, dur, type='sine', vol=0.08) {
+      try {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.value = vol;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        o.stop(audioCtx.currentTime + dur);
+      } catch(e){}
+    }
+    function soundClick() { playTone(600, 0.04, 'sine', 0.06); }
+    function soundUnlock() { playTone(800, 0.08); setTimeout(()=>playTone(1200, 0.1), 60); }
+    function soundLock() { playTone(400, 0.1, 'triangle', 0.07); }
+    function soundNotif() { playTone(900, 0.06); setTimeout(()=>playTone(1100, 0.08), 80); }
+    function soundShutter() { playTone(200, 0.05, 'square', 0.1); setTimeout(()=>playTone(150, 0.08, 'square', 0.06), 40); }
+
+    function updateTime() {
+      const now=new Date();
+      const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+      document.getElementById('statusTime').textContent=t;
+      document.getElementById('lockTime').textContent=t;
+      const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+      const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      document.getElementById('lockDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
+      const cl=document.getElementById('clockLocal'); if(cl) cl.textContent=t;
+    }
+    updateTime(); setInterval(updateTime,10000);
+
+    if(navigator.getBattery){
+      navigator.getBattery().then(b=>{
+        const u=()=>{
+          const p=Math.round(b.level*100);
+          document.getElementById('battLevel').style.width=p+'%';
+          document.getElementById('lockBatt').textContent=p+'٪';
+          const wb=document.getElementById('widgetBatt'); if(wb) wb.textContent=p+'٪';
+          document.getElementById('battLevel').classList.toggle('low',p<20);
+        };
+        u(); b.addEventListener('levelchange',u);
+      });
+    }
+
+    // Face ID unlock
+    function startFaceId() {
+      if(unlocked) return;
+      const overlay=document.getElementById('faceId');
+      const ring=document.getElementById('faceRing');
+      const text=document.getElementById('faceText');
+      overlay.classList.add('show');
+      ring.className='faceid-ring scanning';
+      text.textContent='جارٍ التعرف...';
+      soundClick();
+      setTimeout(()=>{
+        ring.className='faceid-ring success';
+        text.textContent='تم التعرف';
+        soundUnlock();
+        setTimeout(()=>{
+          overlay.classList.remove('show');
+          unlock(true);
+        }, 400);
+      }, 1100);
+    }
+
+    function unlock(fromFace) {
+      if(unlocked) return;
+      unlocked=true;
+      document.getElementById('lockScreen').classList.remove('aod');
+      document.getElementById('lockScreen').classList.add('unlocked');
+      document.getElementById('colorPicker').style.display='none';
+      clearTimeout(aodTimeout);
+      if(!fromFace) soundUnlock();
+      vibrate(12);
+    }
+    function lockDevice() {
+      unlocked=false;
+      document.getElementById('lockScreen').classList.remove('unlocked');
+      document.getElementById('colorPicker').style.display='flex';
+      closeAllOverlays();
+      document.getElementById('appView').classList.remove('open');
+      closeCamera();
+      document.getElementById('miniPlayer').classList.remove('show');
+      aodTimeout=setTimeout(()=>{ if(!unlocked) document.getElementById('lockScreen').classList.add('aod'); },5000);
+      soundLock(); vibrate(15); showToast('تم القفل');
+    }
+
+    // Gestures
+    const screenEl=document.getElementById('screen');
+    screenEl.addEventListener('touchstart',e=>{
+      startY=e.touches[0].clientY; startX=e.touches[0].clientX;
+      if(unlocked && startY>window.innerHeight-80) longPressTimer=setTimeout(()=>openSwitcher(),400);
+    },{passive:true});
+    screenEl.addEventListener('touchmove',e=>{
+      if(Math.abs(e.touches[0].clientY-startY)>10||Math.abs(e.touches[0].clientX-startX)>10) clearTimeout(longPressTimer);
+    },{passive:true});
+    screenEl.addEventListener('touchend',e=>{
+      clearTimeout(longPressTimer);
+      const dy=startY-e.changedTouches[0].clientY;
+      const dx=startX-e.changedTouches[0].clientX;
+      if(!unlocked && dy>70){ startFaceId(); return; }
+      if(unlocked && startY<60 && startX>window.innerWidth*0.55 && dy<-40){ openCC(); return; }
+      if(unlocked && startY<60 && startX<window.innerWidth*0.45 && dy<-40){ openNotifs(); return; }
+      if(unlocked && !isOverlayOpen() && startY>80 && startY<300 && dy<-60){ openSpotlight(); return; }
+      if(isOverlayOpen() && dy<-50){ closeAllOverlays(); return; }
+      if(unlocked && !isOverlayOpen() && Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){
+        if(dx>0 && currentPage<MAX_PAGES) goPage(currentPage+1);
+        else if(dx<0 && currentPage>0) goPage(currentPage-1);
+      }
+      if(unlocked && startY>window.innerHeight-60 && dy>40){
+        if(document.getElementById('appView').classList.contains('open')||document.getElementById('cameraApp').classList.contains('open')){
+          closeApp(); closeCamera();
+        } else closeAllOverlays();
+      }
+    },{passive:true});
+
+    document.getElementById('lockScreen').addEventListener('click',e=>{
+      if(e.target.closest('.lock-btn')||e.target.closest('.color-picker')) return;
+      if(!unlocked) startFaceId();
+    });
+
+    function goPage(n){
+      currentPage=n;
+      document.getElementById('pagesTrack').style.transform='translateX('+(n*100)+'%)';
+      document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===n));
+      soundClick();
+    }
+
+    // Apps
+    document.querySelectorAll('.app[data-app]').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(!unlocked) return;
+        const name=el.dataset.app;
+        if(name==='camera') openCamera(); else openApp(name);
+      });
+      // Long press for folder
+      let lp;
+      el.addEventListener('touchstart',()=>{
+        lp=setTimeout(()=>{
+          if(unlocked) openFolderDemo(el);
+        },550);
+      },{passive:true});
+      el.addEventListener('touchend',()=>clearTimeout(lp));
+      el.addEventListener('touchmove',()=>clearTimeout(lp));
+    });
+
+    function openApp(name){
+      const data=appData[name]; if(!data) return;
+      closeAllOverlays();
+      document.getElementById('appTitle').textContent=data.title;
+      document.getElementById('appContent').innerHTML=data.html;
+      document.getElementById('appView').classList.add('open');
+      if(name==='calculator') buildCalc();
+      if(name==='clock') updateTime();
+      soundClick(); vibrate(8);
+    }
+    function closeApp(){ document.getElementById('appView').classList.remove('open'); soundClick(); }
+
+    // Camera real
+    async function openCamera(){
+      closeAllOverlays();
+      document.getElementById('cameraApp').classList.add('open');
+      soundClick();
+      try {
+        if(camStream){ camStream.getTracks().forEach(t=>t.stop()); }
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video:{ facingMode, width:{ideal:1280}, height:{ideal:720} },
+          audio:false
+        });
+        const video=document.getElementById('camVideo');
+        video.srcObject=camStream;
+        video.style.display='block';
+        document.getElementById('camPlaceholder').style.display='none';
+      } catch(err){
+        document.getElementById('camPlaceholder').style.display='block';
+        document.getElementById('camVideo').style.display='none';
+        showToast('الكاميرا غير متاحة · محاكاة فقط');
+      }
+    }
+    function openCameraFromLock(){ startFaceId(); setTimeout(()=>{ if(unlocked) openCamera(); },1600); }
+    function closeCamera(){
+      document.getElementById('cameraApp').classList.remove('open');
+      if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+      document.getElementById('camVideo').srcObject=null;
+      document.getElementById('camVideo').style.display='none';
+      document.getElementById('camPlaceholder').style.display='block';
+    }
+    function setZoom(el){ document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); showToast('زوم '+el.dataset.z+'×'); soundClick(); }
+    function setCamMode(el){ document.querySelectorAll('.cam-mode').forEach(m=>m.classList.remove('active')); el.classList.add('active'); soundClick(); }
+    function takePhoto(){
+      soundShutter(); vibrate(20); showToast('تم التقاط الصورة 📸');
+      const vf=document.getElementById('viewfinder');
+      vf.style.filter='brightness(2)'; setTimeout(()=>vf.style.filter='',80);
+    }
+    async function flipCam(){
+      facingMode = facingMode==='environment' ? 'user' : 'environment';
+      showToast(facingMode==='user'?'الكاميرا الأمامية':'الكاميرا الخلفية');
+      if(document.getElementById('cameraApp').classList.contains('open')) openCamera();
+    }
+    function toggleCamFlash(el){ el.classList.toggle('active'); showToast(el.classList.contains('active')?'الفلاش مفعل':'الفلاش مغلق'); soundClick(); }
+
+    // CC / Notifs / Spotlight
+    function openCC(){ closeAllOverlays(false); document.getElementById('controlCenter').classList.add('open'); soundClick(); }
+    function toggleCC(btn){ btn.classList.toggle('active'); soundClick(); vibrate(5); }
+    function setBrightness(v){ document.getElementById('screen').style.filter='brightness('+(v/100)+')'; }
+    function toggleFlashCC(btn){ toggleCC(btn); flashOn=btn.classList.contains('active'); showToast(flashOn?'الفلاش مفعل':'الفلاش مغلق'); }
+
+    const sampleNotifs=[
+      {icon:'💬',color:'#30d158',app:'الرسائل',text:'أحمد: مرحبا! كيف حالك؟',time:'الآن'},
+      {icon:'📧',color:'#0a84ff',app:'البريد',text:'Apple: فاتورتك جاهزة',time:'١٢ دقيقة'},
+      {icon:'🎵',color:'#ff2d55',app:'الموسيقى',text:'ألبوم جديد',time:'ساعة'},
+      {icon:'⚙️',color:'#8e8e93',app:'الإعدادات',text:'تحديث iOS 26.1',time:'٣ ساعات'},
+    ];
+    function renderNotifs(){
+      document.getElementById('notifList').innerHTML=sampleNotifs.map(n=>`
+        <div class="notif-card" onclick="dismissNotif(this)">
+          <div class="notif-icon" style="background:${n.color}">${n.icon}</div>
+          <div class="notif-body"><div class="notif-app">${n.app}</div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
+        </div>`).join('');
+    }
+    function openNotifs(){ closeAllOverlays(false); renderNotifs(); document.getElementById('notifCenter').classList.add('open'); soundNotif(); }
+    function dismissNotif(el){ el.classList.add('removing'); setTimeout(()=>el.remove(),250); soundClick(); }
+    function clearNotifs(){ document.querySelectorAll('.notif-card').forEach((c,i)=>setTimeout(()=>{c.classList.add('removing');setTimeout(()=>c.remove(),250)},i*50)); }
+
+    function openSpotlight(){ closeAllOverlays(false); document.getElementById('spotlight').classList.add('open'); setTimeout(()=>document.getElementById('spotlightInput').focus(),300); soundClick(); }
+    function searchApps(q){
+      const res=document.getElementById('spotlightResults');
+      if(!q.trim()){res.innerHTML='';return;}
+      const m=Object.entries(appData).filter(([k,v])=>v.title.includes(q)||k.includes(q.toLowerCase()));
+      res.innerHTML=m.map(([k,v])=>`<div class="spotlight-item" onclick="closeAllOverlays();openApp('${k}')"><span style="font-size:22px">📱</span><span>${v.title}</span></div>`).join('')||'<div style="opacity:.5;padding:12px">لا نتائج</div>';
+    }
+
+    // Island
+    function toggleIsland(){ if(islandMode){ document.getElementById('island').className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; islandMode=null; } }
+    function showIslandMusic(){
+      islandMode='music';
+      document.getElementById('island').className='dynamic-island music';
+      document.getElementById('islandContent').innerHTML='<div class="island-music-art">🎵</div><div class="island-music-info"><div class="title">أغنية تجريبية</div><div class="artist">فنان تجريبي</div></div><div class="island-controls"><span onclick="event.stopPropagation();toggleMusic()">⏸</span></div>';
+    }
+    function showIslandCall(){
+      islandMode='call';
+      document.getElementById('island').className='dynamic-island call';
+      document.getElementById('islandContent').innerHTML='<div class="island-call-info"><div class="name">أحمد محمد</div><div class="status">مكالمة واردة...</div></div><div class="island-call-btns"><div class="island-call-btn decline" onclick="event.stopPropagation();endCall()">✕</div><div class="island-call-btn accept" onclick="event.stopPropagation();acceptCall()">✓</div></div>';
+      vibrate([100,50,100]); soundNotif();
+    }
+    function simulateCall(){ closeAllOverlays(); showIslandCall(); showToast('مكالمة واردة'); }
+    function acceptCall(){
+      document.querySelector('.island-call-info .status').textContent='متصل ٠:٠١';
+      document.querySelector('.island-call-btns').innerHTML='<div class="island-call-btn decline" onclick="event.stopPropagation();endCall()">📵</div>';
+      showToast('تم الرد'); soundClick();
+    }
+    function endCall(){ document.getElementById('island').className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; islandMode=null; showToast('انتهت المكالمة'); }
+    function startTimer(){
+      closeAllOverlays(); islandMode='timer';
+      document.getElementById('island').className='dynamic-island expanded';
+      let sec=60;
+      document.getElementById('islandContent').innerHTML='<div style="font-size:28px;font-weight:200;width:100%;text-align:center" id="timerDisplay">١:٠٠</div>';
+      const iv=setInterval(()=>{
+        sec--; if(sec<=0){clearInterval(iv);endCall();showToast('انتهى المؤقت');soundNotif();return;}
+        const el=document.getElementById('timerDisplay'); if(el) el.textContent='٠:'+String(sec).padStart(2,'0');
+      },1000);
+    }
+
+    // Music + Mini player
+    function toggleMusic(){
+      musicPlaying=!musicPlaying;
+      document.getElementById('ccPlayBtn').textContent=musicPlaying?'⏸':'▶️';
+      document.getElementById('miniPlayIcon').textContent=musicPlaying?'⏸':'▶️';
+      if(musicPlaying){
+        showIslandMusic();
+        document.getElementById('ccTrack').textContent='أغنية تجريبية';
+        document.getElementById('ccArtist').textContent='فنان تجريبي';
+        document.getElementById('miniPlayer').classList.add('show');
+        showToast('تشغيل الموسيقى');
+      } else {
+        if(islandMode==='music') toggleIsland();
+        document.getElementById('ccTrack').textContent='Not Playing';
+        document.getElementById('ccArtist').textContent='اضغط للتشغيل';
+        document.getElementById('miniPlayer').classList.remove('show');
+      }
+      soundClick(); vibrate(8);
+    }
+    function prevTrack(){ showToast('السابقة'); soundClick(); }
+    function nextTrack(){ showToast('التالية'); soundClick(); }
+
+    function openSwitcher(){ closeAllOverlays(false); document.getElementById('appSwitcher').classList.add('open'); soundClick(); vibrate(12); }
+    function closeSwitcher(e){ if(e&&e.target!==document.getElementById('appSwitcher'))return; document.getElementById('appSwitcher').classList.remove('open'); }
+
+    // Folders
+    function openFolderDemo(el){
+      const name=el.querySelector('.app-name')?.textContent||'مجلد';
+      document.getElementById('folderName').textContent='مجلد · '+name;
+      document.getElementById('folderApps').innerHTML=`
+        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759);width:52px;height:52px;font-size:24px">📞</div></div>
+        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff);width:52px;height:52px;font-size:24px">🧭</div></div>
+        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f);width:52px;height:52px;font-size:24px">🎵</div></div>
+        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366);width:52px;height:52px;font-size:24px">⚙️</div></div>
+      `;
+      document.getElementById('folderModal').classList.add('open');
+      soundClick(); vibrate(10);
+      showToast('مجلد (تجريبي)');
+    }
+    function closeFolder(e){
+      if(e&&e.target!==document.getElementById('folderModal')&&!e.target.classList.contains('folder-close')) return;
+      document.getElementById('folderModal').classList.remove('open');
+    }
+
+    function changeColor(c){
+      document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+      document.querySelector('.color-dot[data-c="'+c+'"]').classList.add('active');
+      const phone=document.getElementById('phone'), home=document.getElementById('homeScreen'), lock=document.getElementById('lockScreen');
+      if(c==='orange'){
+        phone.style.borderColor='#e85d04'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(232,93,4,.45),inset 0 0 0 1px rgba(255,255,255,.06)';
+        home.style.background='linear-gradient(160deg,#2d1a0e 0%,#4a2511 40%,#1a0f08 100%)';
+        lock.style.background='linear-gradient(165deg,#2d1a0e 0%,#5c2e0e 40%,#1a0f08 100%)';
+      } else if(c==='blue'){
+        phone.style.borderColor='#1e3a5f'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(30,58,95,.5),inset 0 0 0 1px rgba(255,255,255,.06)';
+        home.style.background='linear-gradient(160deg,#0a1628 0%,#12253d 40%,#0a1520 100%)';
+        lock.style.background='linear-gradient(165deg,#0a1628 0%,#1a3050 40%,#0a1520 100%)';
+      } else {
+        phone.style.borderColor='#2c2c2e'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.06)';
+        home.style.background='linear-gradient(160deg,#1a1a2e 0%,#16213e 45%,#0f3460 100%)';
+        lock.style.background='linear-gradient(165deg,#0f0c29 0%,#302b63 40%,#24243e 100%)';
+      }
+      soundClick();
+    }
+
+    function toggleFlash(){
+      flashOn=!flashOn;
+      const island=document.getElementById('island');
+      if(flashOn){ island.classList.add('expanded'); document.getElementById('islandContent').innerHTML='<div style="font-size:20px">🔦</div><div style="font-size:13px">الفلاش مفعل</div>'; showToast('الفلاش مفعل'); }
+      else { island.className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; showToast('الفلاش مغلق'); }
+      soundClick();
+    }
+
+    function buildCalc(){
+      const btns=['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','','.','='];
+      const c=document.getElementById('calcBtns'); if(!c)return;
+      c.innerHTML=btns.map(b=>{
+        if(b==='')return'<div></div>';
+        const isOp='÷×−+=C±%'.includes(b);
+        return '<button style="padding:14px;border-radius:12px;border:none;font-size:18px;font-weight:500;background:'+(isOp?'#ff9f0a':'#333')+';color:#fff;cursor:pointer" onclick="calcPress(\''+b+'\')">'+b+'</button>';
+      }).join('');
+    }
+    let calcVal='0';
+    function calcPress(b){
+      const d=document.getElementById('calcDisplay'); if(!d)return;
+      if(b==='C')calcVal='0';
+      else if(b==='='){ try{calcVal=String(eval(calcVal.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')));}catch{calcVal='خطأ';} }
+      else if(calcVal==='0'&&!'÷×−+'.includes(b))calcVal=b;
+      else calcVal+=b;
+      d.textContent=calcVal; soundClick();
+    }
+
+    function isOverlayOpen(){
+      return document.getElementById('controlCenter').classList.contains('open')||
+             document.getElementById('notifCenter').classList.contains('open')||
+             document.getElementById('spotlight').classList.contains('open')||
+             document.getElementById('appSwitcher').classList.contains('open')||
+             document.getElementById('folderModal').classList.contains('open');
+    }
+    function closeAllOverlays(includeSwitcher=true){
+      document.getElementById('controlCenter').classList.remove('open');
+      document.getElementById('notifCenter').classList.remove('open');
+      document.getElementById('spotlight').classList.remove('open');
+      document.getElementById('folderModal').classList.remove('open');
+      if(includeSwitcher) document.getElementById('appSwitcher').classList.remove('open');
+      document.getElementById('spotlightInput').value='';
+      document.getElementById('spotlightResults').innerHTML='';
+    }
+    function showToast(msg){
+      const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),1800);
+    }
+    function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+    document.body.addEventListener('touchmove',e=>{
+      if(!e.target.closest('.app-content')&&!e.target.closest('.notif-center')&&!e.target.closest('.app-switcher')) e.preventDefault();
+    },{passive:false});
+
+    // Resume audio context on first interaction
+    document.body.addEventListener('touchstart',()=>{ if(audioCtx.state==='suspended') audioCtx.resume(); },{once:true});
+
+    aodTimeout=setTimeout(()=>{ if(!unlocked) document.getElementById('lockScreen').classList.add('aod'); },8000);
+
+    // Register trivial SW for PWA feel (optional)
+    if('serviceWorker' in navigator){
+      // inline minimal - skip real SW file for simplicity
+    }
+  </script>
+</body>
+</html>
