@@ -1,1099 +1,252 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="iPhone 17" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="manifest" href="manifest.json" />
-  <title>iPhone 17 Pro Max Simulator</title>
-  <style>
-    :root {
-      --radius: 48px; --island-w: 126px; --island-h: 37px; --status-h: 54px;
-      --accent: #0a84ff; --green: #30d158; --red: #ff453a; --orange: #ff9f0a;
-      --glass: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.1);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
-    body {
-      background:#050505; min-height:100dvh; display:flex; align-items:center; justify-content:center;
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;
-      overflow:hidden; color:#fff;
-    }
-    .phone {
-      position:relative; width:min(390px,96vw); height:min(844px,96dvh);
-      background:#000; border-radius:var(--radius); border:3px solid #2c2c2e;
-      box-shadow:0 0 0 2px #111, 0 25px 60px -12px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.06);
-      overflow:hidden; display:flex; flex-direction:column; transition:border-color .4s, box-shadow .4s;
-    }
-    .phone::before { content:""; position:absolute; left:-4px; top:110px; width:4px; height:28px; background:#2c2c2e; border-radius:2px 0 0 2px; z-index:5; }
-    .phone::after { content:""; position:absolute; right:-4px; top:150px; width:4px; height:80px; background:#2c2c2e; border-radius:0 2px 2px 0; z-index:5; }
-    .screen { flex:1; position:relative; background:#000; overflow:hidden; border-radius:calc(var(--radius) - 4px); margin:4px; }
-
-    /* Liquid Glass helper */
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border: 1px solid var(--glass-border);
-    }
-
-    /* Dynamic Island */
-    .dynamic-island {
-      position:absolute; top:11px; left:50%; transform:translateX(-50%);
-      width:var(--island-w); height:var(--island-h); background:#000; border-radius:22px;
-      z-index:200; display:flex; align-items:center; justify-content:center; gap:10px;
-      transition:all .45s cubic-bezier(.4,0,.2,1); box-shadow:0 0 0 1px rgba(255,255,255,.1);
-      overflow:hidden; cursor:pointer;
-    }
-    .dynamic-island.expanded { width:220px; height:80px; border-radius:28px; }
-    .dynamic-island.music { width:250px; height:72px; border-radius:24px; }
-    .dynamic-island.call { width:270px; height:78px; border-radius:26px; background:#1a1a1a; }
-    .island-cam { width:11px; height:11px; background:#1a1a1a; border-radius:50%; border:1.5px solid #333; position:relative; flex-shrink:0; }
-    .island-cam::after { content:""; position:absolute; top:2.5px; left:2.5px; width:4px; height:4px; background:#0a84ff; border-radius:50%; opacity:.7; }
-    .island-sensor { width:7px; height:7px; background:#222; border-radius:50%; flex-shrink:0; }
-    .island-content { display:none; align-items:center; gap:10px; padding:0 14px; width:100%; height:100%; }
-    .dynamic-island.expanded .island-content, .dynamic-island.music .island-content, .dynamic-island.call .island-content { display:flex; }
-    .dynamic-island.expanded .island-cam, .dynamic-island.music .island-cam, .dynamic-island.call .island-cam,
-    .dynamic-island.expanded .island-sensor, .dynamic-island.music .island-sensor, .dynamic-island.call .island-sensor { display:none; }
-    .island-music-art { width:44px; height:44px; border-radius:8px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-    .island-music-info { flex:1; overflow:hidden; }
-    .island-music-info .title { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .island-music-info .artist { font-size:11px; opacity:.7; }
-    .island-controls { display:flex; gap:12px; font-size:16px; }
-    .island-call-info { flex:1; text-align:center; }
-    .island-call-info .name { font-size:15px; font-weight:600; }
-    .island-call-info .status { font-size:12px; opacity:.7; }
-    .island-call-btns { display:flex; gap:16px; }
-    .island-call-btn { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
-    .island-call-btn.accept { background:var(--green); }
-    .island-call-btn.decline { background:var(--red); }
-
-    /* Status Bar */
-    .status-bar {
-      position:absolute; top:0; left:0; right:0; height:var(--status-h);
-      display:flex; justify-content:space-between; align-items:flex-end;
-      padding:0 26px 8px; z-index:150; font-size:15px; font-weight:600; letter-spacing:-.3px; pointer-events:none;
-    }
-    .status-right { display:flex; align-items:center; gap:5px; }
-    .battery { width:25px; height:12px; border:1.5px solid rgba(255,255,255,.9); border-radius:3px; position:relative; padding:1px; }
-    .battery::after { content:""; position:absolute; right:-4px; top:3px; width:2px; height:5px; background:rgba(255,255,255,.9); border-radius:0 1px 1px 0; }
-    .battery-level { height:100%; width:78%; background:var(--green); border-radius:1px; transition:width .3s; }
-    .battery-level.low { background:var(--red); }
-
-    /* Face ID Overlay */
-    .faceid-overlay {
-      position:absolute; inset:0; z-index:220; background:rgba(0,0,0,.85);
-      display:none; flex-direction:column; align-items:center; justify-content:center; gap:24px;
-    }
-    .faceid-overlay.show { display:flex; }
-    .faceid-ring {
-      width:90px; height:90px; border-radius:50%; border:3px solid rgba(255,255,255,.2);
-      position:relative; display:flex; align-items:center; justify-content:center;
-    }
-    .faceid-ring.scanning { border-color:var(--green); animation:faceScan 1.2s ease-in-out; }
-    .faceid-ring.success { border-color:var(--green); }
-    .faceid-icon { font-size:42px; transition:transform .3s; }
-    .faceid-ring.scanning .faceid-icon { transform:scale(1.1); }
-    @keyframes faceScan {
-      0% { box-shadow:0 0 0 0 rgba(48,209,88,.4); }
-      50% { box-shadow:0 0 0 20px rgba(48,209,88,0); }
-      100% { box-shadow:0 0 0 0 rgba(48,209,88,0); }
-    }
-    .faceid-text { font-size:16px; opacity:.9; }
-
-    /* Lock Screen */
-    .lock-screen {
-      position:absolute; inset:0; z-index:40;
-      background: linear-gradient(165deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
-      display:flex; flex-direction:column; align-items:center;
-      transition: transform .55s cubic-bezier(.4,0,.2,1), opacity .4s;
-    }
-    .lock-screen.unlocked { transform:translateY(-110%); opacity:0; pointer-events:none; }
-    .lock-screen.aod { background:#000; }
-    .lock-screen.aod .lock-widgets, .lock-screen.aod .lock-bottom { opacity:0; pointer-events:none; }
-    .lock-screen.aod .lock-time { font-size:72px; opacity:.55; margin-top:120px; }
-    .lock-screen.aod .lock-date { opacity:.35; }
-    .lock-time { margin-top:88px; font-size:84px; font-weight:200; letter-spacing:-2px; line-height:1; transition:all .4s; }
-    .lock-date { font-size:19px; font-weight:400; opacity:.95; margin-top:2px; }
-    .lock-widgets { margin-top:36px; display:flex; gap:12px; padding:0 18px; width:100%; justify-content:center; transition:opacity .3s; }
-    .widget {
-      background:rgba(255,255,255,.12); backdrop-filter:blur(30px) saturate(160%);
-      border-radius:22px; padding:14px 16px; min-width:148px; border:1px solid rgba(255,255,255,.1);
-    }
-    .widget-title { font-size:12px; opacity:.75; margin-bottom:3px; }
-    .widget-value { font-size:22px; font-weight:600; }
-    .widget-sub { font-size:12px; opacity:.6; margin-top:2px; }
-    .lock-bottom { margin-top:auto; margin-bottom:36px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; transition:opacity .3s; }
-    .lock-buttons { display:flex; justify-content:space-between; width:100%; padding:0 38px; }
-    .lock-btn {
-      width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.14);
-      backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center;
-      font-size:22px; border:1px solid rgba(255,255,255,.1); transition:transform .15s;
-    }
-    .lock-btn:active { transform:scale(.88); }
-    .swipe-hint { font-size:13px; opacity:.65; animation:pulse 2.2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:.45} 50%{opacity:.9} }
-
-    /* Home Screen */
-    .home-screen {
-      position:absolute; inset:0; z-index:30;
-      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 45%, #0f3460 100%);
-      display:flex; flex-direction:column; padding-top:58px; transition:background .5s;
-    }
-    .pages-container { flex:1; overflow:hidden; position:relative; }
-    .pages-track { display:flex; height:100%; transition:transform .35s cubic-bezier(.4,0,.2,1); }
-    .page {
-      min-width:100%; padding:8px 14px 0;
-      display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:min-content; gap:14px 6px;
-      align-content:start;
-    }
-    .page.widgets-page {
-      display:flex; flex-direction:column; gap:12px; padding:12px 16px;
-    }
-    .home-widget {
-      border-radius:22px; padding:16px; background:rgba(255,255,255,.12);
-      backdrop-filter:blur(30px) saturate(160%); border:1px solid rgba(255,255,255,.1);
-    }
-    .home-widget.large { min-height:140px; }
-    .home-widget.medium { min-height:90px; }
-    .hw-title { font-size:13px; opacity:.7; margin-bottom:6px; }
-    .hw-value { font-size:28px; font-weight:600; }
-    .hw-row { display:flex; gap:10px; }
-    .app { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; position:relative; }
-    .app-icon {
-      width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-      font-size:28px; box-shadow:0 4px 14px rgba(0,0,0,.3); transition:transform .15s;
-    }
-    .app:active .app-icon { transform:scale(.86); }
-    .app-name { font-size:11px; font-weight:500; text-align:center; max-width:68px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 3px rgba(0,0,0,.6); }
-    .folder-badge {
-      position:absolute; top:-2px; right:8px; background:rgba(255,255,255,.25); font-size:9px;
-      width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    }
-    .page-dots { display:flex; justify-content:center; gap:7px; padding:6px 0 4px; }
-    .dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.3); transition:all .25s; }
-    .dot.active { background:#fff; width:8px; height:8px; }
-    .dock {
-      margin:4px 14px 10px; background:rgba(255,255,255,.16); backdrop-filter:blur(30px) saturate(180%);
-      border-radius:28px; padding:11px 16px; display:flex; justify-content:space-around;
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .dock .app-icon { width:54px; height:54px; border-radius:13px; }
-
-    /* Mini Music Bar */
-    .mini-player {
-      position:absolute; bottom:52px; left:14px; right:14px; z-index:140;
-      background:rgba(30,30,30,.85); backdrop-filter:blur(30px) saturate(180%);
-      border-radius:16px; padding:10px 14px; display:none; align-items:center; gap:12px;
-      border:1px solid rgba(255,255,255,.1); cursor:pointer;
-    }
-    .mini-player.show { display:flex; }
-    .mini-art { width:40px; height:40px; border-radius:8px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-    .mini-info { flex:1; overflow:hidden; }
-    .mini-info .t { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .mini-info .a { font-size:11px; opacity:.65; }
-    .mini-ctrl { font-size:18px; padding:4px; }
-
-    .home-indicator {
-      position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
-      width:134px; height:5px; background:rgba(255,255,255,.35); border-radius:3px; z-index:250;
-    }
-
-    /* Control Center */
-    .control-center {
-      position:absolute; inset:0; z-index:180; background:rgba(0,0,0,.5); backdrop-filter:blur(50px) saturate(180%);
-      display:flex; flex-direction:column; padding:70px 18px 40px;
-      transform:translateY(-110%); opacity:0; transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s;
-      pointer-events:none;
-    }
-    .control-center.open { transform:translateY(0); opacity:1; pointer-events:auto; }
-    .cc-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .cc-card {
-      background:rgba(255,255,255,.12); border-radius:20px; padding:16px;
-      border:1px solid rgba(255,255,255,.1); display:flex; flex-direction:column; gap:10px;
-      backdrop-filter:blur(20px);
-    }
-    .cc-card.wide { grid-column:span 2; }
-    .cc-row { display:flex; gap:12px; }
-    .cc-btn {
-      width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.15);
-      display:flex; align-items:center; justify-content:center; font-size:20px; transition:all .2s;
-      border:none; color:#fff; cursor:pointer;
-    }
-    .cc-btn.active { background:var(--accent); }
-    .cc-btn.green.active { background:var(--green); }
-    .cc-label { font-size:12px; opacity:.8; }
-    .cc-slider-wrap { display:flex; align-items:center; gap:10px; }
-    .cc-slider { flex:1; -webkit-appearance:none; height:6px; border-radius:3px; background:rgba(255,255,255,.2); outline:none; }
-    .cc-slider::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; cursor:pointer; }
-    .cc-music { display:flex; align-items:center; gap:12px; }
-    .cc-music-art { width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,#ff2d55,#5856d6); display:flex; align-items:center; justify-content:center; font-size:22px; }
-    .cc-music-info { flex:1; }
-    .cc-music-info .t { font-size:14px; font-weight:600; }
-    .cc-music-info .a { font-size:12px; opacity:.7; }
-
-    /* Notification Center */
-    .notif-center {
-      position:absolute; inset:0; z-index:180; background:rgba(0,0,0,.5); backdrop-filter:blur(50px) saturate(180%);
-      display:flex; flex-direction:column; padding:70px 16px 40px;
-      transform:translateY(-110%); opacity:0; transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s;
-      pointer-events:none; overflow-y:auto;
-    }
-    .notif-center.open { transform:translateY(0); opacity:1; pointer-events:auto; }
-    .notif-header { font-size:28px; font-weight:700; margin-bottom:16px; padding:0 4px; }
-    .notif-card {
-      background:rgba(255,255,255,.12); border-radius:18px; padding:14px 16px; margin-bottom:10px;
-      border:1px solid rgba(255,255,255,.1); display:flex; gap:12px; align-items:flex-start;
-      transition:transform .2s, opacity .2s; backdrop-filter:blur(20px);
-    }
-    .notif-card.removing { transform:translateX(-120%); opacity:0; }
-    .notif-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-    .notif-body { flex:1; }
-    .notif-app { font-size:13px; font-weight:600; margin-bottom:2px; }
-    .notif-text { font-size:14px; opacity:.85; line-height:1.35; }
-    .notif-time { font-size:11px; opacity:.5; margin-top:4px; }
-    .notif-clear { text-align:center; margin-top:12px; font-size:15px; color:var(--accent); padding:10px; cursor:pointer; }
-
-    /* Spotlight */
-    .spotlight {
-      position:absolute; inset:0; z-index:175; background:rgba(0,0,0,.65); backdrop-filter:blur(40px);
-      display:flex; flex-direction:column; padding:70px 18px 20px;
-      transform:translateY(30%); opacity:0; transition:all .35s cubic-bezier(.4,0,.2,1); pointer-events:none;
-    }
-    .spotlight.open { transform:translateY(0); opacity:1; pointer-events:auto; }
-    .spotlight-input {
-      width:100%; padding:14px 18px; border-radius:14px; border:none; background:rgba(255,255,255,.15);
-      color:#fff; font-size:17px; outline:none; direction:rtl;
-    }
-    .spotlight-input::placeholder { color:rgba(255,255,255,.45); }
-    .spotlight-results { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
-    .spotlight-item {
-      display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px;
-      background:rgba(255,255,255,.08); cursor:pointer;
-    }
-
-    /* App View */
-    .app-view {
-      position:absolute; inset:0; z-index:160; background:#000;
-      display:none; flex-direction:column; transform:scale(.92); opacity:0;
-      transition:all .32s cubic-bezier(.4,0,.2,1);
-    }
-    .app-view.open { display:flex; transform:scale(1); opacity:1; }
-    .app-header {
-      padding:58px 16px 14px; display:flex; align-items:center; gap:12px;
-      background:rgba(28,28,30,.92); backdrop-filter:blur(30px); flex-shrink:0;
-    }
-    .back-btn {
-      width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.12);
-      display:flex; align-items:center; justify-content:center; font-size:17px; cursor:pointer;
-    }
-    .app-title { font-size:17px; font-weight:600; }
-    .app-content { flex:1; padding:20px 16px; overflow-y:auto; font-size:15px; line-height:1.5; color:#e5e5ea; }
-    .app-content h2 { font-size:22px; margin-bottom:12px; color:#fff; }
-    .spec-card {
-      background:#1c1c1e; border-radius:14px; padding:14px; margin-bottom:10px; border:1px solid #2c2c2e;
-    }
-    .spec-card strong { color:var(--accent); display:block; margin-bottom:3px; font-size:12px; }
-
-    /* Camera */
-    .camera-app { background:#000; }
-    .camera-viewfinder {
-      flex:1; background:#111; display:flex; align-items:center; justify-content:center;
-      position:relative; overflow:hidden;
-    }
-    #camVideo { width:100%; height:100%; object-fit:cover; display:none; }
-    .camera-grid { position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr 1fr; opacity:.2; pointer-events:none; }
-    .camera-grid div { border:1px solid rgba(255,255,255,.5); }
-    .camera-zoom { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:5; }
-    .zoom-btn {
-      padding:6px 12px; border-radius:20px; background:rgba(0,0,0,.55); font-size:13px; font-weight:600;
-      border:1px solid rgba(255,255,255,.25); color:#fff; cursor:pointer;
-    }
-    .zoom-btn.active { background:rgba(255,255,255,.9); color:#000; }
-    .camera-controls { padding:16px 20px 30px; display:flex; justify-content:space-around; align-items:center; background:#111; }
-    .cam-mode { font-size:13px; opacity:.5; padding:4px 8px; cursor:pointer; }
-    .cam-mode.active { opacity:1; font-weight:600; color:var(--orange); }
-    .shutter { width:72px; height:72px; border-radius:50%; border:4px solid #fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-    .shutter-inner { width:60px; height:60px; border-radius:50%; background:#fff; transition:transform .1s; }
-    .shutter:active .shutter-inner { transform:scale(.85); }
-    .cam-switch, .cam-flash { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; }
-
-    /* App Switcher */
-    .app-switcher {
-      position:absolute; inset:0; z-index:190; background:rgba(0,0,0,.7); backdrop-filter:blur(40px);
-      display:flex; align-items:center; justify-content:center; gap:16px; padding:40px 20px;
-      opacity:0; pointer-events:none; transition:opacity .3s; overflow-x:auto;
-    }
-    .app-switcher.open { opacity:1; pointer-events:auto; }
-    .switcher-card {
-      min-width:200px; height:360px; border-radius:24px; background:#1c1c1e;
-      border:1px solid #333; display:flex; flex-direction:column; overflow:hidden;
-      transform:scale(.9); transition:transform .25s; cursor:pointer; flex-shrink:0;
-    }
-    .switcher-card:active { transform:scale(.95); }
-    .switcher-card-header { padding:12px; font-size:13px; font-weight:600; background:#2c2c2e; }
-    .switcher-card-body { flex:1; display:flex; align-items:center; justify-content:center; font-size:40px; }
-
-    /* Folder Modal */
-    .folder-modal {
-      position:absolute; inset:0; z-index:170; background:rgba(0,0,0,.6); backdrop-filter:blur(30px);
-      display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px;
-    }
-    .folder-modal.open { display:flex; }
-    .folder-box {
-      background:rgba(40,40,40,.9); border-radius:28px; padding:20px; width:100%; max-width:300px;
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .folder-name { text-align:center; font-size:17px; font-weight:600; margin-bottom:16px; }
-    .folder-apps { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; justify-items:center; }
-    .folder-close { margin-top:16px; text-align:center; color:var(--accent); font-size:15px; cursor:pointer; }
-
-    /* Color Picker */
-    .color-picker {
-      position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
-      display:flex; gap:12px; z-index:70; background:rgba(0,0,0,.55);
-      padding:10px 16px; border-radius:30px; backdrop-filter:blur(12px);
-    }
-    .color-dot { width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:transform .2s; }
-    .color-dot.active { border-color:#fff; transform:scale(1.18); }
-    .color-silver { background:linear-gradient(135deg,#e8e8e8,#a0a0a0); }
-    .color-orange { background:linear-gradient(135deg,#ff6b35,#e85d04); }
-    .color-blue { background:linear-gradient(135deg,#1e3a5f,#0d1b2a); }
-
-    .toast {
-      position:absolute; top:70px; left:50%; transform:translateX(-50%) translateY(-20px);
-      background:rgba(30,30,30,.92); backdrop-filter:blur(12px); padding:10px 20px;
-      border-radius:20px; font-size:14px; z-index:300; opacity:0; transition:all .3s;
-      pointer-events:none; border:1px solid rgba(255,255,255,.1);
-    }
-    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-    /* Landscape */
-    @media (orientation: landscape) and (max-height: 500px) {
-      .phone { width:min(100vw, 700px); height:min(100dvh, 380px); border-radius:28px; }
-      .lock-time { font-size:48px; margin-top:40px; }
-      .page { gap:8px 4px; }
-      .app-icon { width:44px; height:44px; font-size:20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Nexora</title>
+<style>
+:root{--bg:#07111f;--text:#f3f7ff;--muted:#9db0c7;--a:#55d7ff;--b:#8d7cff;--good:#67e8a5;--bad:#ff7181}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:radial-gradient(circle at top,#172d4b 0,#07111f 45%,#050b13 100%) fixed;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;padding-bottom:84px}
+.app{max-width:760px;margin:auto;padding:14px}
+.en{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.m{color:#6cb8ff}.f{color:#ff9ccf}
+#top{display:flex;justify-content:space-between;align-items:center;padding:6px 0 12px}
+.logo{font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.muted{color:var(--muted);font-size:13px}
+button{border:0;border-radius:13px;padding:11px 15px;font:inherit;font-weight:800;background:var(--a);color:#031018;cursor:pointer}
+button.secondary,.sp,.x{background:#1b334d;color:var(--text)}
+button.danger{background:#52212c;color:#ffe2e6}
+.sp{padding:6px 10px}.x{padding:8px 12px}
+.big2{width:100%;padding:15px;font-size:17px;margin:10px 0}
+.card{background:rgba(14,28,46,.94);border:1px solid #24415f;border-radius:18px;padding:15px;margin:10px 0}
+.hero{background:linear-gradient(135deg,#102b48,#172650)}
+.big{font-size:24px;font-weight:900}.stat{font-size:26px;font-weight:900}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid .card{margin:0}
+.bar{height:9px;background:#07111f;border-radius:99px;overflow:hidden;flex:1;margin:8px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b));transition:width .3s}
+.pill{display:inline-block;background:#172f48;border:1px solid #2a4866;border-radius:99px;padding:5px 10px;margin:3px;font-size:13px}
+.unit{display:flex;align-items:center;gap:12px;cursor:pointer}.unit.lock{opacity:.45;cursor:default}
+.ic{font-size:30px;width:50px;height:50px;border-radius:15px;background:#142840;display:grid;place-items:center}
+.w{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1d3550}
+table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:8px;border-bottom:1px solid #1d3550}.pr{color:var(--a);font-weight:800}
+.good{color:var(--good)}
+input,textarea{width:100%;background:#081522;border:1px solid #29445f;color:var(--text);border-radius:12px;padding:13px;font:inherit;font-size:16px;margin:8px 0}
+.lt{display:flex;align-items:center;gap:10px;padding:6px 0}
+.qs{font-size:19px;line-height:1.7;font-weight:700}
+.opt{display:block;width:100%;text-align:start;background:#12283f;color:var(--text);border:2px solid #294765;margin:8px 0;padding:14px;font-size:16px}
+.opt.sel{border-color:var(--a)}.opt.ok{border-color:var(--good);background:#123626}.opt.no{border-color:var(--bad);background:#40202a}
+.ansbox,.pool,.kb{display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:14px}
+.ansbox{min-height:64px;background:#081522;border:1px dashed #29445f;margin:8px 0}
+.chip{background:#12283f;color:var(--text);border:2px solid #294765;padding:9px 13px}
+.fb{border-radius:16px;padding:14px;margin-top:12px}.fb.g{background:#123626;color:var(--good)}.fb.r{background:#40202a;color:var(--bad)}.fb button{width:100%;margin-top:10px}
+#nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a1626;border-top:1px solid #24415f;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+#nav button{flex:1;background:none;color:var(--muted);font-size:11px;padding:6px 2px}#nav button.on{color:var(--a)}
+#nav span{display:block;font-size:20px}
+body.inl #nav,body.inl #top{display:none}
+body.bigf{font-size:19px}body.bigf .muted{font-size:16px}body.bigf .qs{font-size:23px}
+</style>
 </head>
 <body>
-  <div class="phone" id="phone">
-    <div class="screen" id="screen">
-      <!-- Dynamic Island -->
-      <div class="dynamic-island" id="island" onclick="toggleIsland()">
-        <div class="island-cam"></div>
-        <div class="island-sensor"></div>
-        <div class="island-content" id="islandContent"></div>
-      </div>
+<div class="app"><div id="top"></div><main id="v"></main></div>
+<nav id="nav">
+<button data-t="path" onclick="go('path')"><span>🏠</span>المسار</button>
+<button data-t="review" onclick="go('review')"><span>🧠</span>مراجعة</button>
+<button data-t="dict" onclick="go('dict')"><span>📖</span>قاموس</button>
+<button data-t="verbs" onclick="go('verbs')"><span>🔤</span>أفعال</button>
+<button data-t="mine" onclick="go('mine')"><span>✍️</span>قاموسي</button>
+<button data-t="me" onclick="go('me')"><span>👤</span>ملفي</button>
+</nav>
+<script>
+const $=i=>document.getElementById(i),T=()=>new Date().toISOString().slice(0,10),yest=()=>new Date(Date.now()-864e5).toISOString().slice(0,10);
+const P0=()=>({xp:0,done:{},err:[],w:{}});
+let S={l:'',streak:0,last:'',day:'',dxp:0,h:{},acc:{},snd:1,dc:'',tm:{},goal:30,hard:0,big:0,p:{en:P0(),es:P0()}};
+try{const o=JSON.parse(localStorage.getItem('nx8'));if(o)S=Object.assign(S,o)}catch(e){}
+const save=()=>{try{localStorage.setItem('nx8',JSON.stringify(S))}catch(e){}};
+const C=()=>LG[S.l],Q=()=>{const p=S.p[S.l];p.w=p.w||{};p.my=p.my||[];p.cf=p.cf||[];return p};
+const shuf=a=>[...a].sort(()=>Math.random()-.5);
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[.,!?¿¡"]/g,'').replace(/’/g,"'").replace(/\s+/g,' ').trim();
+const lev=(a,b)=>{const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]==b[j-1]?0:1));p=t}}return d[b.length]};
+const say=(t,r)=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=S.l?C().t:'en-US';u.rate=r||.9;speechSynthesis.speak(u)}catch(e){}};
+const beep=ok=>{if(S.snd===0)return;try{const A=new(window.AudioContext||window.webkitAudioContext)(),o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);o.frequency.value=ok?740:200;g.gain.value=.08;o.start();o.stop(A.currentTime+.14);navigator.vibrate&&navigator.vibrate(ok?20:80)}catch(e){}};
+const gc=s=>/^el /.test(s)?'m':/^la /.test(s)?'f':'';
+const wd=s=>`<b class="en ${gc(s)}">${s}</b>`;
+const alt=w=>[w[0],w[0].replace(/^(el|la) /,'')];
+const LV=[['A1',0],['A2',300],['B1',800],['B2',1600],['C1',3000]];
+function lvl(){const x=Q().xp;let i=0;LV.forEach((l,k)=>{if(x>=l[1])i=k});const n=LV[i+1];return{n:LV[i][0],p:n?(x-LV[i][1])/(n[1]-LV[i][1])*100:100,nx:n?n[1]-x:0}}
+const streak=()=>S.last===T()||S.last===yest()?S.streak:0;
+const dxp=()=>S.day===T()?S.dxp:0;
+function award(x){const t=T();if(S.last!==t){S.streak=S.last===yest()?S.streak+1:1;S.last=t}if(S.day!==t){S.day=t;S.dxp=0}S.dxp+=x;S.h[t]=(S.h[t]||0)+x;Q().xp+=x;save()}
 
-      <!-- Status Bar -->
-      <div class="status-bar">
-        <div class="status-left"><span id="statusTime">9:41</span></div>
-        <div class="status-right">
-          <span style="font-size:12px">5G</span>
-          <span style="letter-spacing:-1px">●●●●</span>
-          <span>◉</span>
-          <div class="battery"><div class="battery-level" id="battLevel"></div></div>
-        </div>
-      </div>
+/* ===== LANGUAGE PACKS ===== */
+const LG={
+en:{n:'English',f:'🇬🇧',t:'en-US',s:'للعمل والسفر والتقنية',pr:['I','You','He / She / It','We','They'],pl:'الماضي',
+V:{be:{a:'يكون',f:['am','are','is','are','are'],p:'was / were'},have:{a:'يملك',f:['have','have','has','have','have'],p:'had'},go:{a:'يذهب',f:['go','go','goes','go','go'],p:'went'},do:{a:'يفعل',f:['do','do','does','do','do'],p:'did'},eat:{a:'يأكل',f:['eat','eat','eats','eat','eat'],p:'ate'},see:{a:'يرى',f:['see','see','sees','see','see'],p:'saw'}},
+U:[
+{n:'التحيات والتعارف',i:'👋',d:'مفردات + جمل',x:`<p><b class="en">Hello</b> تُقال دائمًا، و<b class="en">Good morning</b> قبل الظهر.</p><p>التعريف: <span class="en">My name is Ali</span> • السؤال: <span class="en">How are you?</span></p>`,
+v:[['hello','مرحبا'],['goodbye','وداعا'],['please','من فضلك'],['thank you','شكرا'],['yes','نعم'],['no','لا'],['good morning','صباح الخير'],['good night','تصبح على خير']],
+e:[['mc','كيف تقول "صباح الخير"؟',['Good night','Good morning','Goodbye','Please'],1,'Morning = الصباح'],['or','اسمي علي','My name is Ali'],['or','كيف حالك؟','How are you'],['ty','Thank ___ (شكرا)','you']]},
+{n:'الفعل to be',i:'🧩',d:'تصريف + قواعد',tv:['be'],x:`<p>في العربية نقول "هي سعيدة" بلا فعل، أما الإنجليزية فتحتاج <b class="en">to be</b>: <span class="en">She is happy</span>.</p><p>النفي: <span class="en">He is not tired</span>.</p>`,
+v:[['happy','سعيد'],['tired','متعب'],['student','طالب'],['teacher','معلم'],['friend','صديق'],['big','كبير'],['small','صغير'],['new','جديد']],
+e:[['ty','She ___ happy.','is','مع She نستخدم is'],['ty','I ___ a student.','am','مع I نستخدم am فقط'],['ty','They ___ my friends.','are'],['or','هو معلم','He is a teacher'],['mc','اختر الصحيحة',['He are tired','He is tired','He am tired','He be tired'],1,'He → is']]},
+{n:'المضارع البسيط',i:'⚙️',d:'تصريف + عادات',tv:['go','have','do'],x:`<p>للعادات والحقائق: <span class="en">I drink coffee every morning</span>.</p><p>مع he / she / it نضيف <b class="en">s / es</b>: <span class="en">He works • She goes</span>. وكلمة study تصبح <span class="en">studies</span>.</p>`,
+v:[['eat','يأكل'],['drink','يشرب'],['read','يقرأ'],['write','يكتب'],['work','يعمل'],['study','يدرس'],['play','يلعب'],['sleep','ينام']],
+e:[['ty','He ___ to school every day. (go)','goes','go + es مع he'],['ty','I ___ coffee every morning. (drink)','drink'],['mc','She ___ English.',['study','studies','studying','studyes'],1,'y بعد ساكن → ies'],['or','هي تعمل كل يوم','She works every day'],['ty','My brother ___ a car. (have)','has','have → has']]},
+{n:'الطعام والشراب',i:'🍽️',d:'مفردات + طلب بأدب',x:`<p><span class="en">I want water • I like tea</span></p><p>للطلب بأدب: <span class="en">Can I have a coffee, please?</span></p>`,
+v:[['water','ماء'],['bread','خبز'],['milk','حليب'],['tea','شاي'],['coffee','قهوة'],['apple','تفاحة'],['rice','أرز'],['chicken','دجاج']],
+e:[['or','أريد ماء','I want water'],['or','أحب الشاي','I like tea'],['mc','كيف تطلب قهوة بأدب؟',['Give coffee','Can I have a coffee, please?','I coffee','Coffee me'],1,'استخدم Can I have + please'],['ty','I would ___ some milk. (أحب)','like']]},
+{n:'الماضي البسيط',i:'⏪',d:'أفعال شاذة',tv:['go','eat','see','have','do','be'],x:`<p>المنتظمة: أضف <b class="en">ed</b> → <span class="en">play → played</span>.</p><p>الشاذة تتغير كليًا: <span class="en">go → went</span> (راجع الجداول).</p>`,
+v:[['yesterday','أمس'],['last week','الأسبوع الماضي'],['ago','منذ'],['went','ذهب'],['ate','أكل'],['saw','رأى'],['bought','اشترى'],['had','كان لديه']],
+e:[['ty','Yesterday I ___ to the market. (go)','went','ماضي go شاذ = went'],['ty','She ___ a movie last night. (see)','saw'],['mc','ماضي play',['plays','played','plaied','playing'],1,'play + ed'],['or','أكلنا الأرز أمس','We ate rice yesterday'],['ty','They ___ happy yesterday. (be)','were','They → were']]},
+{n:'السفر والاتجاهات',i:'✈️',d:'مفردات + أسئلة',x:`<p><span class="en">Where is the station?</span></p><p><span class="en">Turn left • Turn right • Go straight</span></p>`,
+v:[['airport','مطار'],['ticket','تذكرة'],['hotel','فندق'],['map','خريطة'],['passport','جواز سفر'],['station','محطة'],['left','يسار'],['right','يمين']],
+e:[['or','أين المحطة؟','Where is the station'],['mc','كيف تطلب خريطة؟',['I map','Can I have a map?','Map me','Where map'],1],['ty','Turn ___ at the hotel. (يمين)','right'],['or','أريد تذكرة','I want a ticket']]},
+{n:'مركز الاتصال (Call Center)',i:'🎧',d:'عبارات مهنية',x:`<p>عبارات احترافية لخدمة الزبائن:</p><p><span class="en">Thank you for calling. How can I help you?</span></p><p><span class="en">Please hold. I will check that for you.</span></p>`,
+v:[['customer','زبون'],['account','حساب'],['order','طلبية'],['refund','استرجاع المبلغ'],['complaint','شكاية'],['hold on','انتظر'],['available','متوفر'],['delay','تأخير']],
+e:[['or','كيف يمكنني مساعدتك؟','How can I help you'],['mc','كيف تطلب من الزبون الانتظار بأدب؟',['Wait now','Please hold','You hold','Stop talking'],1,'Please hold = من فضلك انتظر على الخط'],['ty','I will ___ that for you. (أتحقق)','check'],['or','أنا آسف على التأخير','I am sorry for the delay']]}
+]},
+es:{n:'Español',f:'🇪🇸',t:'es-ES',s:'كلمات أندلسية تعرفها أصلا 🌙',pr:['Yo','Tú','Él / Ella','Nosotros','Ellos'],pl:'الماضي (yo)',
+V:{ser:{a:'يكون (دائم)',f:['soy','eres','es','somos','son'],p:'fui'},estar:{a:'يكون (مؤقت/مكان)',f:['estoy','estás','está','estamos','están'],p:'estuve'},tener:{a:'يملك',f:['tengo','tienes','tiene','tenemos','tienen'],p:'tuve'},ir:{a:'يذهب',f:['voy','vas','va','vamos','van'],p:'fui'},hablar:{a:'يتكلم (-ar)',f:['hablo','hablas','habla','hablamos','hablan'],p:'hablé'},comer:{a:'يأكل (-er)',f:['como','comes','come','comemos','comen'],p:'comí'},vivir:{a:'يعيش (-ir)',f:['vivo','vives','vive','vivimos','viven'],p:'viví'}},
+U:[
+{n:'Saludos • التحيات',i:'👋',d:'مفردات + جمل',x:`<p><b class="en">Hola</b> للتحية، و<b class="en">Buenos días</b> صباحًا. الحرف h في الإسبانية لا يُنطق!</p><p><span class="en">Me llamo Ali • ¿Cómo estás?</span></p><p>علامتا ¿ ¡ تُكتبان في بداية السؤال والتعجب.</p>`,
+v:[['hola','مرحبا'],['adiós','وداعا'],['por favor','من فضلك'],['gracias','شكرا'],['sí','نعم'],['no','لا'],['buenos días','صباح الخير'],['buenas noches','تصبح على خير']],
+e:[['mc','كيف تقول "شكرا"؟',['Gracias','Hola','Adiós','Por favor'],0],['or','اسمي علي','Me llamo Ali'],['or','كيف حالك؟','¿Cómo estás'],['ty','Buenos ___ (صباح)','días','días = أيام']]},
+{n:'Ser vs Estar',i:'⚖️',d:'أصعب نقطة',tv:['ser','estar'],x:`<p><b>ser</b> للهوية والمهنة والأصل والصفات الدائمة: <span class="en">Soy marroquí</span>.</p><p><b>estar</b> للمكان والحالات المؤقتة: <span class="en">Estoy cansado • Estoy en casa</span>.</p>`,
+v:[['cansado','متعب'],['contento','سعيد'],['alto','طويل'],['bajo','قصير'],['guapo','وسيم'],['listo','ذكي'],['enfermo','مريض'],['joven','شاب']],
+e:[['ty','Yo ___ marroquí.','soy','الجنسية دائمة → ser'],['ty','Ella ___ cansada.','está','التعب مؤقت → estar'],['mc','"هو طبيب":',['Él está médico','Él es médico','Él soy médico','Él están médico'],1,'المهنة دائمة → ser'],['or','نحن في المطعم','Estamos en el restaurante','المكان → estar'],['ty','Mi hermano ___ alto.','es','الطول دائم → ser']]},
+{n:'كلمات أندلسية',i:'🌙',d:'أصلها عربي!',x:`<p>في الإسبانية أكثر من <b>4000 كلمة</b> من أصل عربي! أداة <b class="en">al-</b> = "الـ".</p><p>تعرفها أصلًا، فتعلمها بسهولة. وكلمة <b class="en">ojalá</b> أصلها "إن شاء الله".</p>`,
+v:[['el aceite','الزيت'],['el azúcar','السكر'],['la almohada','المخدة'],['el algodón','القطن'],['la aduana','الديوانة (الجمارك)'],['el alcalde','العمدة'],['la naranja','البرتقال'],['ojalá','يا ليت']],
+e:[['mc','أي كلمة أصلها "السكر"؟',['el azúcar','la sal','el pan','la leche'],0],['ty','الزيت = el ___','aceite'],['mc','ما معنى ojalá؟',['يا ليت','شكرا','لماذا','متى'],0,'من "إن شاء الله"'],['ty','القطن = el ___','algodón']]},
+{n:'المضارع -ar -er -ir',i:'⚙️',d:'تصريف الأفعال',tv:['hablar','comer','vivir'],x:`<p>الأفعال تنتهي بـ <b class="en">-ar / -er / -ir</b> ونغير النهاية حسب الفاعل: <span class="en">hablo • hablas • habla</span>.</p><p>لا حاجة لقول yo أو tú غالبًا، فالنهاية تدل على الفاعل.</p>`,
+v:[['hablar','يتكلم'],['comer','يأكل'],['vivir','يعيش'],['beber','يشرب'],['escribir','يكتب'],['leer','يقرأ'],['trabajar','يعمل'],['estudiar','يدرس']],
+e:[['ty','Yo ___ español. (hablar)','hablo','yo → o'],['ty','Ella ___ pan. (comer)','come'],['ty','Nosotros ___ en Madrid. (vivir)','vivimos'],['or','ellos trabajan mucho','Ellos trabajan mucho'],['mc','Tú ___ agua. (beber)',['bebes','bebo','beben','bebe'],0,'tú → es']]},
+{n:'La comida • الطعام',i:'🍽️',d:'مفردات + الجنس',x:`<p>كل اسم مذكر أو مؤنث: <b class="en m">el</b> للمذكر (أزرق) و<b class="en f">la</b> للمؤنث (وردي). احفظ الكلمة مع أداتها.</p><p><span class="en">Quiero agua • Me gusta el té</span></p>`,
+v:[['el agua','الماء'],['el pan','الخبز'],['la leche','الحليب'],['el té','الشاي'],['el café','القهوة'],['la manzana','التفاحة'],['el arroz','الأرز'],['el pollo','الدجاج']],
+e:[['or','أريد ماء','Quiero agua'],['or','أحب الشاي','Me gusta el té'],['mc','كيف تطلب قهوة بأدب؟',['Quiero café, por favor','Café yo','Yo café por','Dame café ya'],0],['ty','___ gusta el pan. (لي)','Me']]},
+{n:'Viajes • السفر',i:'✈️',d:'مفردات + أسئلة',x:`<p><span class="en">¿Dónde está la estación?</span></p><p><span class="en">Gira a la izquierda • a la derecha</span></p><p>انتبه: <span class="en m">el mapa</span> مذكر رغم أنه ينتهي بـ a.</p>`,
+v:[['el aeropuerto','المطار'],['el billete','التذكرة'],['el hotel','الفندق'],['el mapa','الخريطة'],['el pasaporte','جواز السفر'],['la estación','المحطة'],['izquierda','يسار'],['derecha','يمين']],
+e:[['or','أين المحطة؟','¿Dónde está la estación'],['mc','كيف تطلب خريطة؟',['¿Me da un mapa, por favor?','Mapa yo','Dónde mapa','Tengo mapa tú'],0],['ty','Gira a la ___. (يمين)','derecha'],['or','أريد تذكرة','Quiero un billete']]},
+{n:'Papeleo • الأوراق الإدارية',i:'📄',d:'للعيش في إسبانيا',x:`<p>عبارات مهمة في الإدارات الإسبانية. <b class="en">NIE</b> رقم هوية الأجنبي، و<b class="en">empadronamiento</b> التسجيل في البلدية.</p><p><span class="en">Necesito una cita previa.</span></p>`,
+v:[['la cita','الموعد'],['el permiso','التصريح'],['el contrato','عقد العمل'],['el empadronamiento','التسجيل في البلدية'],['el formulario','الاستمارة'],['la huella','البصمة'],['el alquiler','الكراء'],['el médico','الطبيب']],
+e:[['or','أحتاج موعدا','Necesito una cita'],['mc','كيف تقول "عقد العمل"؟',['el contrato','la cita','el permiso','la huella'],0],['ty','Tengo que rellenar el ___. (استمارة)','formulario'],['or','أين البلدية؟','¿Dónde está el ayuntamiento'],['ty','Necesito el ___ de trabajo. (تصريح)','permiso']]}
+]}};
 
-      <!-- Face ID -->
-      <div class="faceid-overlay" id="faceId">
-        <div class="faceid-ring" id="faceRing">
-          <div class="faceid-icon">😊</div>
-        </div>
-        <div class="faceid-text" id="faceText">Face ID</div>
-      </div>
+/* ===== VIEWS ===== */
+let tab='path',L=null;
+const go=t=>{tab=t;draw()};
+const setL=k=>{S.l=k;save();tab='path';draw()},sw=()=>{S.l='';draw()};
+function pick0(){document.body.classList.add('inl');$('v').innerHTML=`<div class="card hero"><div class="logo">Nexora</div><div class="big">شنو بغيتي تتعلم؟ 🌍</div><div class="muted">لكل لغة تقدم مستقل، وتقدر تبدل فأي وقت.</div></div>`+Object.keys(LG).map(k=>`<div class="card unit" onclick="setL('${k}')"><div class="ic">${LG[k].f}</div><div style="flex:1"><b>${LG[k].n}</b><div class="muted">${LG[k].s} • ${S.p[k].xp} XP</div></div></div>`).join('')}
+function draw(){WK=0;try{speechSynthesis.cancel()}catch(e){}document.body.classList.toggle('bigf',!!S.big);L=null;document.body.classList.remove('inl');if(!S.l)return pick0();
+const l=lvl();
+$('top').innerHTML=`<div><div class="logo">Nexora</div><div class="muted">${C().n} • ${l.n}</div></div><div><button class="sp" onclick="sw()">${C().f} ▾</button><span class="pill">🔥 ${streak()}</span><span class="pill">⚡ ${Q().xp}</span></div>`;
+$('v').innerHTML=({path:pathV,review:revV,dict:dictV,verbs:()=>`<div class="card hero"><div class="big">🔤 تصريف الأفعال</div><div class="muted">المضارع والماضي</div></div>`+Object.keys(C().V).map(vt).join(''),me:meV,mine:mineV})[tab]();
+document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+window.scrollTo(0,0)}
+const vt=k=>{const v=C().V[k];return `<div class="card"><b class="en">${S.l=='en'?'to ':''}${k}</b> — ${v.a} <button class="sp" onclick="say('${k}')">🔊</button><table>${C().pr.map((p,i)=>`<tr><td class="en">${p}</td><td><span class="en pr">${v.f[i]}</span></td></tr>`).join('')}<tr><td>${C().pl}</td><td><span class="en pr">${v.p}</span></td></tr></table></div>`};
+function pathV(){const g=Math.min(100,dxp()/S.goal*100),D=Q().done;
+return `<div class="card hero"><div class="big">رحلتك اللغوية 🚀</div><div class="muted">هدف اليوم: ${dxp()} / ${S.goal} XP</div><div style="display:flex"><div class="bar"><i style="width:${g}%"></i></div></div></div>`+
+(mix().length>=4?`<div class="card unit" onclick="start(-2)"><div class="ic">⚡</div><div style="flex:1"><b>تحدي اليوم</b><div class="muted">${S.dc===T()?'تم ✓ (تدريب حر بدون مكافأة)':'خليط من كل كلماتك • +20 XP'}</div></div></div>`:'')+C().U.map((u,i)=>{const open=i==0||D[i-1],st=D[i]||0;
+return `<div class="card unit ${open?'':'lock'}" ${open?`onclick="intro(${i})"`:''}><div class="ic">${open?u.i:'🔒'}</div><div style="flex:1"><b>${u.n}</b><div class="muted">${u.v.length} كلمات • ${u.d}</div></div><div>${'⭐'.repeat(st)}</div></div>`}).join('')}
+const wrow=w=>`<div class="w"><span>${wd(w[0])} — ${w[1]}</span><button class="sp" onclick="say('${w[0]}')">🔊</button><button class="sp" onclick="say('${w[0]}',.5)">🐢</button></div>`;
+function intro(i){const u=C().U[i];
+$('v').innerHTML=`<button class="secondary" onclick="draw()">→ رجوع</button><div class="card"><h2>${u.i} ${u.n}</h2>${u.x}</div>${(u.tv||[]).map(vt).join('')}<div class="card"><b>المفردات</b>${u.v.map(wrow).join('')}</div><button class="secondary big2" onclick="walk(${i})">🎧 وضع المشي (استمع للوحدة)</button><button class="big2" onclick="start(${i})">ابدأ التمرين</button>`;window.scrollTo(0,0)}
+function revV(){const W=Object.values(Q().w),d=due(),m=W.filter(o=>o.b>=4).length;return `<div class="card hero"><div class="big">🧠 المراجعة الذكية</div><p class="muted">كل كلمة تعود في وقت علمي: بعد 1، 2، 4، 8، 16، 32 يومًا. الخطأ يعيدها لنقطة البداية. "متقنة" = تذكرتها 4 مرات متتالية.</p></div><div class="grid"><div class="card"><div class="muted">مستحقة اليوم</div><div class="stat">${d.length}</div></div><div class="card"><div class="muted">متقنة</div><div class="stat">${m}/${W.length}</div></div></div>`+(d.length?`<button class="big2" onclick="start(-1)">راجع ${Math.min(10,d.length)} كلمة الآن</button>`:`<div class="card"><p class="good">لا توجد كلمات مستحقة 👏 ارجع غدًا أو تعلم دروسًا جديدة.</p></div>`)}
+const dl=q=>{q=q.toLowerCase();return C().U.map(u=>[u,u.v.filter(w=>!q||w[0].includes(q)||w[1].includes(q))]).filter(x=>x[1].length).map(([u,v])=>`<div class="card"><b>${u.i} ${u.n}</b>${v.map(wrow).join('')}</div>`).join('')||'<p class="muted">لا نتائج</p>'};
+const dictV=()=>`<input placeholder="🔍 ابحث بالعربية أو اللغة الأخرى" oninput="$('dl').innerHTML=dl(this.value)"><div id="dl">${dl('')}</div>`;
+function meV(){const l=lvl(),D=Q().done,wd2=C().U.reduce((a,u,i)=>a+(D[i]?u.v.length:0),0);
+return `<div class="card hero"><div class="muted">المستوى (${C().n})</div><div class="big">${l.n}</div><div style="display:flex"><div class="bar"><i style="width:${l.p}%"></i></div></div><div class="muted">${l.nx?`باقي ${l.nx} XP للمستوى التالي`:'أعلى مستوى!'}</div></div>
+<div class="grid"><div class="card"><div class="muted">XP</div><div class="stat">${Q().xp}</div></div><div class="card"><div class="muted">أيام متتالية</div><div class="stat">🔥${streak()}</div></div><div class="card"><div class="muted">كلمات متعلَّمة</div><div class="stat">${wd2}</div></div><div class="card"><div class="muted">دروس مكتملة</div><div class="stat">${Object.keys(D).length}/${C().U.length}</div></div></div>
+${statsH()}${chartH()}${badgeH()}${accH()}<div class="card"><button onclick="ex()">📤 تصدير</button> <label class="pill" style="cursor:pointer">📥 استيراد<input type="file" accept=".json" hidden onchange="imp(this)"></label> <button class="secondary" onclick="tsnd()">${S.snd===0?'🔇':'🔊'} الصوت</button> <button class="danger" onclick="rs()">إعادة ضبط</button></div>`}
+function ex(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download='nexora-progress.json';a.click()}
+function rs(){if(confirm('حذف كل التقدم؟')){try{localStorage.removeItem('nx8')}catch(e){}location.reload()}}
 
-      <!-- Lock Screen -->
-      <div class="lock-screen" id="lockScreen">
-        <div class="lock-time" id="lockTime">9:41</div>
-        <div class="lock-date" id="lockDate">الجمعة، ٩ أكتوبر</div>
-        <div class="lock-widgets">
-          <div class="widget">
-            <div class="widget-title">الطقس</div>
-            <div class="widget-value">٢٤°</div>
-            <div class="widget-sub">مشمس جزئياً</div>
-          </div>
-          <div class="widget">
-            <div class="widget-title">البطارية</div>
-            <div class="widget-value" id="lockBatt">٧٨٪</div>
-            <div class="widget-sub">شحن عادي</div>
-          </div>
-        </div>
-        <div class="lock-bottom">
-          <div class="lock-buttons">
-            <div class="lock-btn" onclick="event.stopPropagation();toggleFlash()">🔦</div>
-            <div class="lock-btn" onclick="event.stopPropagation();openCameraFromLock()">📷</div>
-          </div>
-          <div class="swipe-hint">اسحب للأعلى أو اضغط · Face ID</div>
-        </div>
-      </div>
+/* ===== REAL SYSTEMS: SRS, STATS, SPEECH ===== */
+const due=()=>Object.values(Q().w).filter(o=>o.d<=T()).map(o=>o.w),mix=()=>C().U.filter((u,i)=>Q().done[i]).flatMap(u=>u.v);
+const DAYS=[0,1,2,4,8,16,32],addD=n=>new Date(Date.now()+n*864e5).toISOString().slice(0,10);
+function srs(w,ok){const W=Q().w,o=W[w[0]]||{b:0};o.b=ok?Math.min(6,o.b+1):0;o.d=addD(DAYS[o.b]);o.w=w;W[w[0]]=o;save()}
+function rec0(t,ok){const a=S.acc[t]=S.acc[t]||[0,0];a[1]++;if(ok)a[0]++}
+const chartH=()=>{const r=[];for(let i=6;i>=0;i--){const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10);r.push([d.slice(5),S.h[d]||0])}const m=Math.max(30,...r.map(x=>x[1]));return `<div class="card"><b>📊 XP آخر 7 أيام</b><div style="display:flex;align-items:flex-end;gap:6px;margin-top:10px" dir="ltr">${r.map(x=>`<div style="flex:1;text-align:center;font-size:10px;display:flex;flex-direction:column;justify-content:flex-end;height:120px"><div style="height:${x[1]/m*80}px;background:linear-gradient(var(--a),var(--b));border-radius:6px 6px 0 0;min-height:2px"></div>${x[1]}<br>${x[0]}</div>`).join('')}</div></div>`};
+const badgeH=()=>{const ps=Object.values(S.p),mast=ps.reduce((a,p)=>a+Object.values(p.w||{}).filter(o=>o.b>=4).length,0),tx=ps.reduce((a,p)=>a+p.xp,0);const B=[['🌱','أول درس',ps.some(p=>Object.keys(p.done).length)],['🔥','3 أيام متتالية',streak()>=3],['⭐','3 نجوم في درس',ps.some(p=>Object.values(p.done).includes(3))],['🧠','10 كلمات متقنة',mast>=10],['⚡','500 XP',tx>=500],['🌍','بدأت لغتين',ps.every(p=>p.xp>0)]];return `<div class="card"><b>🏆 الإنجازات (تُفتح بشروط حقيقية)</b><div>${B.map(b=>`<span class="pill" style="opacity:${b[2]?1:.35}">${b[0]} ${b[1]}</span>`).join('')}</div></div>`};
+const accH=()=>{const N={mc:'اختيار',ty:'كتابة',or:'ترتيب',mt:'مطابقة',sp:'نطق'},k=Object.keys(S.acc);return `<div class="card"><b>🎯 دقتك حسب نوع التمرين</b>${k.length?k.map(t=>{const a=S.acc[t],p=Math.round(a[0]/a[1]*100);return `<div class="muted" style="margin-top:8px">${N[t]} • ${p}% (${a[1]} سؤال)</div><div style="display:flex"><div class="bar"><i style="width:${p}%"></i></div></div>`}).join(''):'<p class="muted">ابدأ درسًا لتظهر إحصائياتك.</p>'}</div>`};
+function imp(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.p)throw 0;S=Object.assign(S,o);save();draw()}catch(e){alert('ملف غير صالح')}})}
+const tsnd=()=>{S.snd=S.snd===0?1:0;save();draw()};
+function rec(){const R=window.SpeechRecognition||window.webkitSpeechRecognition,r=new R();r.lang=C().t;r.maxAlternatives=3;$('mic').textContent='🎙️ أسمعك...';r.onresult=e=>spDone([...e.results[0]].map(x=>x.transcript));r.onerror=r.onnomatch=()=>{$('mic').textContent='🎤 تعذر التسجيل، حاول مجددًا'};try{r.start()}catch(e){}}
+function spDone(t){const q=L.q[L.i],ok=t.some(h=>q.a.some(a=>{const x=norm(a),y=norm(h);return x==y||(x.length>5&&lev(x,y)<=1)}));L.fb={ok,c:q.a[0],v:t[0]||''};beep(ok);rec0('sp',ok);srs(q.w,ok);if(ok)L.ok++;else L.h--;lessonUI()}
+function skipSp(){L.q.splice(L.i,1);if(L.i>=L.q.length)return end(true);lessonUI()}
 
-      <!-- Home Screen -->
-      <div class="home-screen" id="homeScreen">
-        <div class="pages-container">
-          <div class="pages-track" id="pagesTrack">
-            <!-- Page 1 -->
-            <div class="page" id="page1">
-              <div class="app" data-app="phone"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📞</div><div class="app-name">الهاتف</div></div>
-              <div class="app" data-app="safari"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🧭</div><div class="app-name">Safari</div></div>
-              <div class="app" data-app="messages"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">💬</div><div class="app-name">الرسائل</div></div>
-              <div class="app" data-app="mail"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">✉️</div><div class="app-name">البريد</div></div>
-              <div class="app" data-app="camera"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">📷</div><div class="app-name">الكاميرا</div></div>
-              <div class="app" data-app="photos"><div class="app-icon" style="background:linear-gradient(135deg,#ff9500,#ff2d55,#5856d6)">🖼️</div><div class="app-name">الصور</div></div>
-              <div class="app" data-app="settings"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">⚙️</div><div class="app-name">الإعدادات</div></div>
-              <div class="app" data-app="music"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎵</div><div class="app-name">الموسيقى</div></div>
-              <div class="app" data-app="maps"><div class="app-icon" style="background:linear-gradient(135deg,#64d2ff,#0a84ff)">🗺️</div><div class="app-name">الخرائط</div></div>
-              <div class="app" data-app="wallet"><div class="app-icon" style="background:linear-gradient(135deg,#111,#222);border:1px solid #333">💳</div><div class="app-name">المحفظة</div></div>
-              <div class="app" data-app="clock"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">🕐</div><div class="app-name">الساعة</div></div>
-              <div class="app" data-app="notes"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">📝</div><div class="app-name">الملاحظات</div></div>
-              <div class="app" data-app="calculator"><div class="app-icon" style="background:#1c1c1e">🔢</div><div class="app-name">الحاسبة</div></div>
-              <div class="app" data-app="weather"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🌤️</div><div class="app-name">الطقس</div></div>
-              <div class="app" data-app="appstore"><div class="app-icon" style="background:linear-gradient(135deg,#0a84ff,#5e5ce6)">🍎</div><div class="app-name">App Store</div></div>
-              <div class="app" data-app="about"><div class="app-icon" style="background:linear-gradient(135deg,#ff6b35,#e85d04)">ℹ️</div><div class="app-name">حول الجهاز</div></div>
-            </div>
-            <!-- Page 2 -->
-            <div class="page">
-              <div class="app" data-app="files"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">📁</div><div class="app-name">الملفات</div></div>
-              <div class="app" data-app="health"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">❤️</div><div class="app-name">صحتي</div></div>
-              <div class="app" data-app="home"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">🏠</div><div class="app-name">المنزل</div></div>
-              <div class="app" data-app="translate"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🌐</div><div class="app-name">ترجمة</div></div>
-              <div class="app" data-app="tips"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">💡</div><div class="app-name">نصائح</div></div>
-              <div class="app" data-app="books"><div class="app-icon" style="background:linear-gradient(135deg,#ff9500,#ff6b35)">📚</div><div class="app-name">الكتب</div></div>
-              <div class="app" data-app="podcasts"><div class="app-icon" style="background:linear-gradient(135deg,#bf5af2,#9b59b6)">🎙️</div><div class="app-name">البودكاست</div></div>
-              <div class="app" data-app="tv"><div class="app-icon" style="background:linear-gradient(135deg,#111,#333)">📺</div><div class="app-name">TV</div></div>
-              <div class="app" data-app="fitness"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">💪</div><div class="app-name">اللياقة</div></div>
-              <div class="app" data-app="findmy"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📍</div><div class="app-name">Find My</div></div>
-              <div class="app" data-app="measure"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">📏</div><div class="app-name">القياس</div></div>
-              <div class="app" data-app="compass"><div class="app-icon" style="background:#1c1c1e;border:1px solid #333">🧭</div><div class="app-name">البوصلة</div></div>
-              <div class="app" data-app="voice"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎤</div><div class="app-name">المذكرات</div></div>
-              <div class="app" data-app="contacts"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366)">👤</div><div class="app-name">جهات الاتصال</div></div>
-              <div class="app" data-app="calendar"><div class="app-icon" style="background:#fff;color:#ff3b30;font-weight:700;font-size:20px">٩</div><div class="app-name">التقويم</div></div>
-              <div class="app" data-app="reminders"><div class="app-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500)">✅</div><div class="app-name">التذكيرات</div></div>
-            </div>
-            <!-- Page 3 - Widgets -->
-            <div class="page widgets-page">
-              <div class="home-widget large">
-                <div class="hw-title">الطقس · الرياض</div>
-                <div class="hw-value">٢٤°</div>
-                <div style="opacity:.7;margin-top:4px">مشمس جزئياً · رطوبة ٤٥٪</div>
-              </div>
-              <div class="hw-row">
-                <div class="home-widget medium" style="flex:1">
-                  <div class="hw-title">البطارية</div>
-                  <div class="hw-value" id="widgetBatt">٧٨٪</div>
-                </div>
-                <div class="home-widget medium" style="flex:1">
-                  <div class="hw-title">الخطوات</div>
-                  <div class="hw-value">٣٬٢٤١</div>
-                </div>
-              </div>
-              <div class="home-widget medium">
-                <div class="hw-title">التقويم</div>
-                <div style="font-size:15px;margin-top:4px">لا توجد أحداث اليوم</div>
-              </div>
-              <div class="home-widget medium">
-                <div class="hw-title">الموسيقى</div>
-                <div style="font-size:15px;margin-top:4px">اضغط تشغيل من Control Center</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="page-dots">
-          <div class="dot active" data-page="0"></div>
-          <div class="dot" data-page="1"></div>
-          <div class="dot" data-page="2"></div>
-        </div>
-        <div class="dock">
-          <div class="app" data-app="phone"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">📞</div></div>
-          <div class="app" data-app="safari"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff)">🧭</div></div>
-          <div class="app" data-app="messages"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759)">💬</div></div>
-          <div class="app" data-app="music"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f)">🎵</div></div>
-        </div>
-      </div>
+/* ===== PERSONAL DECK, SHARING, STATS, WALK MODE ===== */
+let WK=0;
+const clean=t=>t.replace(/[<>"&`\\]/g,'').replace(/'/g,'’').trim().slice(0,60),esc=t=>t.replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),tg=on=>on?'background:var(--a);color:#031018':'';
+const addW=(a,b)=>{a=clean(String(a));b=clean(String(b));if(a&&b&&!Q().my.some(w=>w[0]==a)){Q().my.push([a,b]);return 1}return 0};
+function addMy(){if(addW($('mw').value,$('mt2').value)){save();draw()}}
+function delMy(i){Q().my.splice(i,1);save();draw()}
+function impCsv(){let n=0;$('csv').value.split(/\r?\n/).forEach(l=>{const m=l.split(/[,;\t]/);if(m.length>=2)n+=addW(m[0],m.slice(1).join(','))});save();alert('تمت إضافة '+n+' كلمة');draw()}
+function csvFile(el){el.files[0]&&el.files[0].text().then(t=>{$('csv').value=t;impCsv()})}
+function shareMy(){const u=location.href.split('#')[0]+'#pack='+btoa(unescape(encodeURIComponent(JSON.stringify({l:S.l,w:Q().my}))));navigator.clipboard?navigator.clipboard.writeText(u).then(()=>alert('تم نسخ الرابط ✓')):prompt('انسخ الرابط',u)}
+function loadHash(){const m=location.hash.match(/pack=(.+)/);if(!m)return;try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));if(LG[o.l]&&Array.isArray(o.w)&&confirm('استيراد '+o.w.length+' كلمة إلى '+LG[o.l].n+'؟')){const l=S.l;S.l=o.l;o.w.slice(0,300).forEach(w=>addW(w[0],w[1]));S.l=l||o.l;save()}history.replaceState(null,'',location.pathname)}catch(e){}}
+function clozeGo(){const qs=[];$('tx').value.split(/(?<=[.!?])\s+/).forEach(s=>{const ws=s.split(/\s+/).filter(w=>w.replace(/[^\p{L}]/gu,'').length>3);if(s.length<12||s.length>140||!ws.length)return;const k=ws[Math.floor(Math.random()*ws.length)],a=k.replace(/[^\p{L}'’]/gu,'');qs.push({t:'ty',q:`<span class="en">${esc(s.replace(k,'_____'))}</span>`,a:[a]})});if(!qs.length)return alert('الصق نصًا فيه جمل كاملة');L={u:{id:-4,v:[],e:[]},q:shuf(qs).slice(0,10),i:0,h:5,ok:0,fb:null,sel:null,ans:[],wr:new Set(),t0:Date.now()};lessonUI()}
+function mineV(){const M=Q().my;return `<div class="card hero"><div class="big">✍️ قاموسي (${C().n})</div><p class="muted">كلماتك الخاصة تدخل المراجعة المتباعدة والتمارين مباشرة.</p></div>
+<div class="card"><input id="mw" dir="ltr" placeholder="الكلمة"><input id="mt2" placeholder="المعنى بالعربية"><button class="big2" onclick="addMy()">➕ أضف</button></div>
+<div class="card"><b>📥 استيراد CSV</b><p class="muted">كل سطر: كلمة,ترجمة (لصق أو ملف)</p><textarea id="csv" rows="3" dir="ltr" placeholder="apple,تفاحة"></textarea><button onclick="impCsv()">استيراد</button> <label class="pill" style="cursor:pointer">📂 ملف<input type="file" accept=".csv,.txt" hidden onchange="csvFile(this)"></label></div>
+<div class="card"><b>📝 تمارين من نصك</b><p class="muted">الصق نصًا؛ كل جملة تصبح تمرين فراغ.</p><textarea id="tx" rows="4" dir="ltr"></textarea><button onclick="clozeGo()">ولّد التمارين</button></div>
+<div class="card"><b>كلماتي (${M.length})</b>${M.map((w,i)=>`<div class="w"><span>${wd(w[0])} — ${w[1]}</span><button class="sp" onclick="delMy(${i})">🗑</button></div>`).join('')}${M.length?`<button class="big2" onclick="start(-3)">تدرب على كلماتي</button><button class="secondary big2" onclick="shareMy()">🔗 شارك كرابط</button>`:''}</div>`}
+function addT(){if(L&&L.t0){const d=T();S.tm[d]=(S.tm[d]||0)+Math.min(30,(Date.now()-L.t0)/6e4);save()}}
+const dk=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+const statsH=()=>{const l=lvl(),avg=[0,1,2,3,4,5,6].reduce((a,i)=>a+(S.h[dk(i)]||0),0)/7,tot=Math.round(Object.values(S.tm).reduce((a,b)=>a+b,0)),td=Math.round(S.tm[T()]||0),soon=Object.values(Q().w).filter(o=>o.d>T()&&o.d<=addD(7)).length;
+const hm=[...Array(28)].map((_,i)=>{const x=S.h[dk(27-i)]||0;return `<i style="display:inline-block;width:11%;aspect-ratio:1;margin:1%;border-radius:4px;background:${x?`rgba(85,215,255,${Math.min(1,.25+x/60)})`:'#12283f'}"></i>`}).join('');
+return `<div class="grid"><div class="card"><div class="muted">وقت التعلم اليوم</div><div class="stat">${td} د</div></div><div class="card"><div class="muted">الإجمالي</div><div class="stat">${tot} د</div></div></div>
+<div class="card"><b>🔮 التوقع</b><p class="muted">${l.nx?(avg>0?`بوتيرتك (${Math.round(avg)} XP/يوم) تصل المستوى التالي بعد ~${Math.ceil(l.nx/avg)} يوم`:'ابدأ التعلم لنحسب لك التوقع'):'وصلت لأعلى مستوى!'}<br>كلمات تستحق المراجعة خلال 7 أيام: ${soon}</p></div>
+<div class="card"><b>🗓️ آخر 28 يوم</b><div dir="ltr" style="margin-top:8px">${hm}</div></div>
+<div class="card"><b>⚙️ الإعدادات</b><div style="margin-top:8px"><span class="muted">الهدف اليومي: </span>${[10,30,50].map(g=>`<button class="sp" style="${tg(S.goal==g)}" onclick="S.goal=${g};save();draw()">${g}</button>`).join(' ')}</div><div style="margin-top:8px"><button class="sp" style="${tg(S.hard)}" onclick="S.hard=${S.hard?0:1};save();draw()">🔥 الوضع الصعب: ${S.hard?'مفعل':'مطفأ'}</button> <button class="sp" style="${tg(S.big)}" onclick="S.big=${S.big?0:1};save();draw()">🔠 قراءة سهلة</button></div></div>`};
+function walk(i){const u=C().U[i];let k=0;WK=1;speechSynthesis.cancel();const step=()=>{if(!WK||k>=u.v.length)return;const w=u.v[k++],a=new SpeechSynthesisUtterance(w[0]);a.lang=C().t;a.rate=.85;a.onend=()=>{const b=new SpeechSynthesisUtterance(w[1]);b.lang='ar-SA';b.onend=()=>setTimeout(step,600);speechSynthesis.speak(b)};speechSynthesis.speak(a)};step()}
 
-      <!-- Mini Player -->
-      <div class="mini-player" id="miniPlayer" onclick="toggleMusic()">
-        <div class="mini-art">🎵</div>
-        <div class="mini-info">
-          <div class="t">أغنية تجريبية</div>
-          <div class="a">فنان تجريبي</div>
-        </div>
-        <div class="mini-ctrl" id="miniPlayIcon">⏸</div>
-      </div>
-
-      <!-- Control Center -->
-      <div class="control-center" id="controlCenter">
-        <div class="cc-grid">
-          <div class="cc-card">
-            <div class="cc-row">
-              <button class="cc-btn active" onclick="toggleCC(this)">📶</button>
-              <button class="cc-btn active" onclick="toggleCC(this)">🅱️</button>
-            </div>
-            <div class="cc-row">
-              <button class="cc-btn" onclick="toggleCC(this)">✈️</button>
-              <button class="cc-btn green" onclick="toggleCC(this)">📡</button>
-            </div>
-            <div class="cc-label">الشبكة</div>
-          </div>
-          <div class="cc-card">
-            <div class="cc-music">
-              <div class="cc-music-art">🎵</div>
-              <div class="cc-music-info">
-                <div class="t" id="ccTrack">Not Playing</div>
-                <div class="a" id="ccArtist">اضغط للتشغيل</div>
-              </div>
-            </div>
-            <div class="cc-row" style="justify-content:center;gap:20px;margin-top:4px">
-              <span onclick="prevTrack()" style="font-size:18px;cursor:pointer">⏮</span>
-              <span onclick="toggleMusic()" style="font-size:22px;cursor:pointer" id="ccPlayBtn">▶️</span>
-              <span onclick="nextTrack()" style="font-size:18px;cursor:pointer">⏭</span>
-            </div>
-          </div>
-          <div class="cc-card wide">
-            <div class="cc-slider-wrap">
-              <span>☀️</span>
-              <input type="range" class="cc-slider" min="10" max="100" value="80" oninput="setBrightness(this.value)">
-            </div>
-          </div>
-          <div class="cc-card wide">
-            <div class="cc-slider-wrap">
-              <span>🔊</span>
-              <input type="range" class="cc-slider" min="0" max="100" value="60">
-            </div>
-          </div>
-          <div class="cc-card">
-            <div class="cc-row" style="justify-content:center;gap:16px">
-              <button class="cc-btn" onclick="toggleFlashCC(this)">🔦</button>
-              <button class="cc-btn" onclick="startTimer()">⏱️</button>
-            </div>
-            <div class="cc-label" style="text-align:center">فلاش · مؤقت</div>
-          </div>
-          <div class="cc-card">
-            <div class="cc-row" style="justify-content:center;gap:16px">
-              <button class="cc-btn" onclick="toggleCC(this)">🌙</button>
-              <button class="cc-btn" onclick="simulateCall()">📞</button>
-            </div>
-            <div class="cc-label" style="text-align:center">تركيز · مكالمة</div>
-          </div>
-          <div class="cc-card wide">
-            <div class="cc-row" style="justify-content:space-around">
-              <button class="cc-btn" onclick="toggleCC(this)">⏺️</button>
-              <button class="cc-btn" onclick="toggleCC(this)">🪞</button>
-              <button class="cc-btn" onclick="toggleCC(this)">🔋</button>
-              <button class="cc-btn" onclick="lockDevice()">🔒</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notifications -->
-      <div class="notif-center" id="notifCenter">
-        <div class="notif-header">الإشعارات</div>
-        <div id="notifList"></div>
-        <div class="notif-clear" onclick="clearNotifs()">مسح الكل</div>
-      </div>
-
-      <!-- Spotlight -->
-      <div class="spotlight" id="spotlight">
-        <input class="spotlight-input" id="spotlightInput" placeholder="بحث في iPhone..." oninput="searchApps(this.value)">
-        <div class="spotlight-results" id="spotlightResults"></div>
-      </div>
-
-      <!-- App View -->
-      <div class="app-view" id="appView">
-        <div class="app-header">
-          <div class="back-btn" onclick="closeApp()">←</div>
-          <div class="app-title" id="appTitle">التطبيق</div>
-        </div>
-        <div class="app-content" id="appContent"></div>
-      </div>
-
-      <!-- Camera -->
-      <div class="app-view camera-app" id="cameraApp">
-        <div class="camera-viewfinder" id="viewfinder">
-          <video id="camVideo" playsinline autoplay muted></video>
-          <div class="camera-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-          <div id="camPlaceholder" style="font-size:48px;opacity:.3;position:absolute">📷</div>
-          <div class="camera-zoom">
-            <div class="zoom-btn" data-z="0.5" onclick="setZoom(this)">0.5</div>
-            <div class="zoom-btn active" data-z="1" onclick="setZoom(this)">1×</div>
-            <div class="zoom-btn" data-z="2" onclick="setZoom(this)">2</div>
-            <div class="zoom-btn" data-z="4" onclick="setZoom(this)">4</div>
-            <div class="zoom-btn" data-z="8" onclick="setZoom(this)">8</div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:center;gap:12px;padding:8px;background:#111">
-          <span class="cam-mode" onclick="setCamMode(this)">سينمائي</span>
-          <span class="cam-mode" onclick="setCamMode(this)">فيديو</span>
-          <span class="cam-mode active" onclick="setCamMode(this)">صورة</span>
-          <span class="cam-mode" onclick="setCamMode(this)">بورتريه</span>
-          <span class="cam-mode" onclick="setCamMode(this)">بانوراما</span>
-        </div>
-        <div class="camera-controls">
-          <div class="cam-flash" onclick="toggleCamFlash(this)">⚡️</div>
-          <div class="shutter" onclick="takePhoto()"><div class="shutter-inner"></div></div>
-          <div class="cam-switch" onclick="flipCam()">🔄</div>
-        </div>
-        <div style="position:absolute;top:58px;left:16px;z-index:10">
-          <div class="back-btn" onclick="closeCamera()" style="background:rgba(0,0,0,.5)">←</div>
-        </div>
-      </div>
-
-      <!-- App Switcher -->
-      <div class="app-switcher" id="appSwitcher" onclick="closeSwitcher(event)">
-        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('safari')"><div class="switcher-card-header">Safari</div><div class="switcher-card-body">🧭</div></div>
-        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('messages')"><div class="switcher-card-header">الرسائل</div><div class="switcher-card-body">💬</div></div>
-        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('music')"><div class="switcher-card-header">الموسيقى</div><div class="switcher-card-body">🎵</div></div>
-        <div class="switcher-card" onclick="event.stopPropagation();closeSwitcher();openApp('settings')"><div class="switcher-card-header">الإعدادات</div><div class="switcher-card-body">⚙️</div></div>
-      </div>
-
-      <!-- Folder Modal -->
-      <div class="folder-modal" id="folderModal" onclick="closeFolder(event)">
-        <div class="folder-box" onclick="event.stopPropagation()">
-          <div class="folder-name" id="folderName">مجلد</div>
-          <div class="folder-apps" id="folderApps"></div>
-          <div class="folder-close" onclick="closeFolder()">إغلاق</div>
-        </div>
-      </div>
-
-      <div class="home-indicator"></div>
-
-      <div class="color-picker" id="colorPicker">
-        <div class="color-dot color-silver active" data-c="silver" onclick="changeColor('silver')"></div>
-        <div class="color-dot color-orange" data-c="orange" onclick="changeColor('orange')"></div>
-        <div class="color-dot color-blue" data-c="blue" onclick="changeColor('blue')"></div>
-      </div>
-
-      <div class="toast" id="toast"></div>
-    </div>
-  </div>
-
-  <script>
-    let unlocked=false, currentPage=0, musicPlaying=false, flashOn=false, aodTimeout=null, islandMode=null;
-    let startY=0, startX=0, longPressTimer=null, camStream=null, facingMode='environment';
-    const MAX_PAGES=2;
-
-    const appData = {
-      phone:{title:'الهاتف',html:'<h2>المكالمات الأخيرة</h2><div class="spec-card"><strong>اليوم</strong>لا توجد مكالمات</div>'},
-      safari:{title:'Safari',html:'<h2>Safari</h2><div class="spec-card"><strong>المفضلة</strong>apple.com<br>google.com</div>'},
-      messages:{title:'الرسائل',html:'<h2>الرسائل</h2><div class="spec-card"><strong>أحمد</strong>مرحبا! كيف حالك؟</div>'},
-      mail:{title:'البريد',html:'<h2>البريد</h2><div class="spec-card"><strong>Apple</strong>فاتورتك جاهزة</div>'},
-      photos:{title:'الصور',html:'<h2>الصور</h2><div class="spec-card"><strong>المكتبة</strong>٠ صورة</div>'},
-      settings:{title:'الإعدادات',html:'<h2>الإعدادات</h2><div class="spec-card"><strong>عام</strong>حول · تحديث</div><div class="spec-card"><strong>العرض</strong>True Tone · Always-On</div><div class="spec-card"><strong>البطارية</strong>وضع الطاقة</div><div class="spec-card"><strong>الخصوصية</strong>Face ID</div>'},
-      music:{title:'الموسيقى',html:'<h2>Apple Music</h2><div class="spec-card"><strong>تشغيل</strong>من Control Center أو الشريط السفلي</div>'},
-      maps:{title:'الخرائط',html:'<h2>الخرائط</h2>'},
-      wallet:{title:'المحفظة',html:'<h2>المحفظة</h2>'},
-      clock:{title:'الساعة',html:'<h2>الساعة</h2><div class="spec-card"><strong>الرياض</strong><span id="clockLocal"></span></div>'},
-      notes:{title:'الملاحظات',html:'<h2>الملاحظات</h2>'},
-      calculator:{title:'الحاسبة',html:'<h2>الحاسبة</h2><div class="spec-card" style="font-size:32px;text-align:left;direction:ltr;padding:20px" id="calcDisplay">0</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px" id="calcBtns"></div>'},
-      weather:{title:'الطقس',html:'<h2>الرياض</h2><div class="spec-card"><strong>الآن</strong>٢٤°</div>'},
-      appstore:{title:'App Store',html:'<h2>App Store</h2>'},
-      about:{title:'حول iPhone 17 Pro Max',html:'<h2>iPhone 17 Pro Max</h2><div class="spec-card"><strong>الشاشة</strong>6.9″ Super Retina XDR · 2868×1320 · 120Hz · Dynamic Island · Always-On · 3000 nit</div><div class="spec-card"><strong>المعالج</strong>A19 Pro (3nm)</div><div class="spec-card"><strong>الذاكرة</strong>12GB · حتى 2TB</div><div class="spec-card"><strong>الكاميرات</strong>48MP Fusion ×3 · 18MP · LiDAR</div><div class="spec-card"><strong>البطارية</strong>حتى 39 ساعة فيديو</div><div class="spec-card"><strong>الأبعاد</strong>163.4×78×8.75 مم · 233g</div><div class="spec-card"><strong>الألوان</strong>Silver · Cosmic Orange · Deep Blue</div><div class="spec-card"><strong>النظام</strong>iOS 26</div><p style="margin-top:12px;opacity:.5;font-size:12px;text-align:center">محاكاة غير رسمية · PWA</p>'},
-      files:{title:'الملفات',html:'<h2>الملفات</h2>'}, health:{title:'صحتي',html:'<h2>صحتي</h2>'}, home:{title:'المنزل',html:'<h2>المنزل</h2>'},
-      translate:{title:'ترجمة',html:'<h2>ترجمة</h2>'}, tips:{title:'نصائح',html:'<h2>نصائح</h2><div class="spec-card"><strong>Face ID</strong>اضغط على شاشة القفل</div><div class="spec-card"><strong>Control Center</strong>اسحب من أعلى اليمين</div><div class="spec-card"><strong>المجلدات</strong>اضغط مطولاً على أيقونة</div>'},
-      books:{title:'الكتب',html:'<h2>الكتب</h2>'}, podcasts:{title:'البودكاست',html:'<h2>البودكاست</h2>'}, tv:{title:'TV',html:'<h2>TV</h2>'},
-      fitness:{title:'اللياقة',html:'<h2>اللياقة</h2>'}, findmy:{title:'Find My',html:'<h2>Find My</h2>'}, measure:{title:'القياس',html:'<h2>القياس</h2>'},
-      compass:{title:'البوصلة',html:'<h2>البوصلة</h2><div class="spec-card" style="text-align:center;font-size:48px">🧭</div>'},
-      voice:{title:'المذكرات',html:'<h2>المذكرات الصوتية</h2>'}, contacts:{title:'جهات الاتصال',html:'<h2>جهات الاتصال</h2>'},
-      calendar:{title:'التقويم',html:'<h2>التقويم</h2>'}, reminders:{title:'التذكيرات',html:'<h2>التذكيرات</h2>'},
-    };
-
-    // Sounds via Web Audio
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playTone(freq, dur, type='sine', vol=0.08) {
-      try {
-        const o = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        o.type = type; o.frequency.value = freq;
-        g.gain.value = vol;
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start();
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-        o.stop(audioCtx.currentTime + dur);
-      } catch(e){}
-    }
-    function soundClick() { playTone(600, 0.04, 'sine', 0.06); }
-    function soundUnlock() { playTone(800, 0.08); setTimeout(()=>playTone(1200, 0.1), 60); }
-    function soundLock() { playTone(400, 0.1, 'triangle', 0.07); }
-    function soundNotif() { playTone(900, 0.06); setTimeout(()=>playTone(1100, 0.08), 80); }
-    function soundShutter() { playTone(200, 0.05, 'square', 0.1); setTimeout(()=>playTone(150, 0.08, 'square', 0.06), 40); }
-
-    function updateTime() {
-      const now=new Date();
-      const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-      document.getElementById('statusTime').textContent=t;
-      document.getElementById('lockTime').textContent=t;
-      const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-      const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      document.getElementById('lockDate').textContent=days[now.getDay()]+'، '+now.getDate()+' '+months[now.getMonth()];
-      const cl=document.getElementById('clockLocal'); if(cl) cl.textContent=t;
-    }
-    updateTime(); setInterval(updateTime,10000);
-
-    if(navigator.getBattery){
-      navigator.getBattery().then(b=>{
-        const u=()=>{
-          const p=Math.round(b.level*100);
-          document.getElementById('battLevel').style.width=p+'%';
-          document.getElementById('lockBatt').textContent=p+'٪';
-          const wb=document.getElementById('widgetBatt'); if(wb) wb.textContent=p+'٪';
-          document.getElementById('battLevel').classList.toggle('low',p<20);
-        };
-        u(); b.addEventListener('levelchange',u);
-      });
-    }
-
-    // Face ID unlock
-    function startFaceId() {
-      if(unlocked) return;
-      const overlay=document.getElementById('faceId');
-      const ring=document.getElementById('faceRing');
-      const text=document.getElementById('faceText');
-      overlay.classList.add('show');
-      ring.className='faceid-ring scanning';
-      text.textContent='جارٍ التعرف...';
-      soundClick();
-      setTimeout(()=>{
-        ring.className='faceid-ring success';
-        text.textContent='تم التعرف';
-        soundUnlock();
-        setTimeout(()=>{
-          overlay.classList.remove('show');
-          unlock(true);
-        }, 400);
-      }, 1100);
-    }
-
-    function unlock(fromFace) {
-      if(unlocked) return;
-      unlocked=true;
-      document.getElementById('lockScreen').classList.remove('aod');
-      document.getElementById('lockScreen').classList.add('unlocked');
-      document.getElementById('colorPicker').style.display='none';
-      clearTimeout(aodTimeout);
-      if(!fromFace) soundUnlock();
-      vibrate(12);
-    }
-    function lockDevice() {
-      unlocked=false;
-      document.getElementById('lockScreen').classList.remove('unlocked');
-      document.getElementById('colorPicker').style.display='flex';
-      closeAllOverlays();
-      document.getElementById('appView').classList.remove('open');
-      closeCamera();
-      document.getElementById('miniPlayer').classList.remove('show');
-      aodTimeout=setTimeout(()=>{ if(!unlocked) document.getElementById('lockScreen').classList.add('aod'); },5000);
-      soundLock(); vibrate(15); showToast('تم القفل');
-    }
-
-    // Gestures
-    const screenEl=document.getElementById('screen');
-    screenEl.addEventListener('touchstart',e=>{
-      startY=e.touches[0].clientY; startX=e.touches[0].clientX;
-      if(unlocked && startY>window.innerHeight-80) longPressTimer=setTimeout(()=>openSwitcher(),400);
-    },{passive:true});
-    screenEl.addEventListener('touchmove',e=>{
-      if(Math.abs(e.touches[0].clientY-startY)>10||Math.abs(e.touches[0].clientX-startX)>10) clearTimeout(longPressTimer);
-    },{passive:true});
-    screenEl.addEventListener('touchend',e=>{
-      clearTimeout(longPressTimer);
-      const dy=startY-e.changedTouches[0].clientY;
-      const dx=startX-e.changedTouches[0].clientX;
-      if(!unlocked && dy>70){ startFaceId(); return; }
-      if(unlocked && startY<60 && startX>window.innerWidth*0.55 && dy<-40){ openCC(); return; }
-      if(unlocked && startY<60 && startX<window.innerWidth*0.45 && dy<-40){ openNotifs(); return; }
-      if(unlocked && !isOverlayOpen() && startY>80 && startY<300 && dy<-60){ openSpotlight(); return; }
-      if(isOverlayOpen() && dy<-50){ closeAllOverlays(); return; }
-      if(unlocked && !isOverlayOpen() && Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){
-        if(dx>0 && currentPage<MAX_PAGES) goPage(currentPage+1);
-        else if(dx<0 && currentPage>0) goPage(currentPage-1);
-      }
-      if(unlocked && startY>window.innerHeight-60 && dy>40){
-        if(document.getElementById('appView').classList.contains('open')||document.getElementById('cameraApp').classList.contains('open')){
-          closeApp(); closeCamera();
-        } else closeAllOverlays();
-      }
-    },{passive:true});
-
-    document.getElementById('lockScreen').addEventListener('click',e=>{
-      if(e.target.closest('.lock-btn')||e.target.closest('.color-picker')) return;
-      if(!unlocked) startFaceId();
-    });
-
-    function goPage(n){
-      currentPage=n;
-      document.getElementById('pagesTrack').style.transform='translateX('+(n*100)+'%)';
-      document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===n));
-      soundClick();
-    }
-
-    // Apps
-    document.querySelectorAll('.app[data-app]').forEach(el=>{
-      el.addEventListener('click',()=>{
-        if(!unlocked) return;
-        const name=el.dataset.app;
-        if(name==='camera') openCamera(); else openApp(name);
-      });
-      // Long press for folder
-      let lp;
-      el.addEventListener('touchstart',()=>{
-        lp=setTimeout(()=>{
-          if(unlocked) openFolderDemo(el);
-        },550);
-      },{passive:true});
-      el.addEventListener('touchend',()=>clearTimeout(lp));
-      el.addEventListener('touchmove',()=>clearTimeout(lp));
-    });
-
-    function openApp(name){
-      const data=appData[name]; if(!data) return;
-      closeAllOverlays();
-      document.getElementById('appTitle').textContent=data.title;
-      document.getElementById('appContent').innerHTML=data.html;
-      document.getElementById('appView').classList.add('open');
-      if(name==='calculator') buildCalc();
-      if(name==='clock') updateTime();
-      soundClick(); vibrate(8);
-    }
-    function closeApp(){ document.getElementById('appView').classList.remove('open'); soundClick(); }
-
-    // Camera real
-    async function openCamera(){
-      closeAllOverlays();
-      document.getElementById('cameraApp').classList.add('open');
-      soundClick();
-      try {
-        if(camStream){ camStream.getTracks().forEach(t=>t.stop()); }
-        camStream = await navigator.mediaDevices.getUserMedia({
-          video:{ facingMode, width:{ideal:1280}, height:{ideal:720} },
-          audio:false
-        });
-        const video=document.getElementById('camVideo');
-        video.srcObject=camStream;
-        video.style.display='block';
-        document.getElementById('camPlaceholder').style.display='none';
-      } catch(err){
-        document.getElementById('camPlaceholder').style.display='block';
-        document.getElementById('camVideo').style.display='none';
-        showToast('الكاميرا غير متاحة · محاكاة فقط');
-      }
-    }
-    function openCameraFromLock(){ startFaceId(); setTimeout(()=>{ if(unlocked) openCamera(); },1600); }
-    function closeCamera(){
-      document.getElementById('cameraApp').classList.remove('open');
-      if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-      document.getElementById('camVideo').srcObject=null;
-      document.getElementById('camVideo').style.display='none';
-      document.getElementById('camPlaceholder').style.display='block';
-    }
-    function setZoom(el){ document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); showToast('زوم '+el.dataset.z+'×'); soundClick(); }
-    function setCamMode(el){ document.querySelectorAll('.cam-mode').forEach(m=>m.classList.remove('active')); el.classList.add('active'); soundClick(); }
-    function takePhoto(){
-      soundShutter(); vibrate(20); showToast('تم التقاط الصورة 📸');
-      const vf=document.getElementById('viewfinder');
-      vf.style.filter='brightness(2)'; setTimeout(()=>vf.style.filter='',80);
-    }
-    async function flipCam(){
-      facingMode = facingMode==='environment' ? 'user' : 'environment';
-      showToast(facingMode==='user'?'الكاميرا الأمامية':'الكاميرا الخلفية');
-      if(document.getElementById('cameraApp').classList.contains('open')) openCamera();
-    }
-    function toggleCamFlash(el){ el.classList.toggle('active'); showToast(el.classList.contains('active')?'الفلاش مفعل':'الفلاش مغلق'); soundClick(); }
-
-    // CC / Notifs / Spotlight
-    function openCC(){ closeAllOverlays(false); document.getElementById('controlCenter').classList.add('open'); soundClick(); }
-    function toggleCC(btn){ btn.classList.toggle('active'); soundClick(); vibrate(5); }
-    function setBrightness(v){ document.getElementById('screen').style.filter='brightness('+(v/100)+')'; }
-    function toggleFlashCC(btn){ toggleCC(btn); flashOn=btn.classList.contains('active'); showToast(flashOn?'الفلاش مفعل':'الفلاش مغلق'); }
-
-    const sampleNotifs=[
-      {icon:'💬',color:'#30d158',app:'الرسائل',text:'أحمد: مرحبا! كيف حالك؟',time:'الآن'},
-      {icon:'📧',color:'#0a84ff',app:'البريد',text:'Apple: فاتورتك جاهزة',time:'١٢ دقيقة'},
-      {icon:'🎵',color:'#ff2d55',app:'الموسيقى',text:'ألبوم جديد',time:'ساعة'},
-      {icon:'⚙️',color:'#8e8e93',app:'الإعدادات',text:'تحديث iOS 26.1',time:'٣ ساعات'},
-    ];
-    function renderNotifs(){
-      document.getElementById('notifList').innerHTML=sampleNotifs.map(n=>`
-        <div class="notif-card" onclick="dismissNotif(this)">
-          <div class="notif-icon" style="background:${n.color}">${n.icon}</div>
-          <div class="notif-body"><div class="notif-app">${n.app}</div><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div>
-        </div>`).join('');
-    }
-    function openNotifs(){ closeAllOverlays(false); renderNotifs(); document.getElementById('notifCenter').classList.add('open'); soundNotif(); }
-    function dismissNotif(el){ el.classList.add('removing'); setTimeout(()=>el.remove(),250); soundClick(); }
-    function clearNotifs(){ document.querySelectorAll('.notif-card').forEach((c,i)=>setTimeout(()=>{c.classList.add('removing');setTimeout(()=>c.remove(),250)},i*50)); }
-
-    function openSpotlight(){ closeAllOverlays(false); document.getElementById('spotlight').classList.add('open'); setTimeout(()=>document.getElementById('spotlightInput').focus(),300); soundClick(); }
-    function searchApps(q){
-      const res=document.getElementById('spotlightResults');
-      if(!q.trim()){res.innerHTML='';return;}
-      const m=Object.entries(appData).filter(([k,v])=>v.title.includes(q)||k.includes(q.toLowerCase()));
-      res.innerHTML=m.map(([k,v])=>`<div class="spotlight-item" onclick="closeAllOverlays();openApp('${k}')"><span style="font-size:22px">📱</span><span>${v.title}</span></div>`).join('')||'<div style="opacity:.5;padding:12px">لا نتائج</div>';
-    }
-
-    // Island
-    function toggleIsland(){ if(islandMode){ document.getElementById('island').className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; islandMode=null; } }
-    function showIslandMusic(){
-      islandMode='music';
-      document.getElementById('island').className='dynamic-island music';
-      document.getElementById('islandContent').innerHTML='<div class="island-music-art">🎵</div><div class="island-music-info"><div class="title">أغنية تجريبية</div><div class="artist">فنان تجريبي</div></div><div class="island-controls"><span onclick="event.stopPropagation();toggleMusic()">⏸</span></div>';
-    }
-    function showIslandCall(){
-      islandMode='call';
-      document.getElementById('island').className='dynamic-island call';
-      document.getElementById('islandContent').innerHTML='<div class="island-call-info"><div class="name">أحمد محمد</div><div class="status">مكالمة واردة...</div></div><div class="island-call-btns"><div class="island-call-btn decline" onclick="event.stopPropagation();endCall()">✕</div><div class="island-call-btn accept" onclick="event.stopPropagation();acceptCall()">✓</div></div>';
-      vibrate([100,50,100]); soundNotif();
-    }
-    function simulateCall(){ closeAllOverlays(); showIslandCall(); showToast('مكالمة واردة'); }
-    function acceptCall(){
-      document.querySelector('.island-call-info .status').textContent='متصل ٠:٠١';
-      document.querySelector('.island-call-btns').innerHTML='<div class="island-call-btn decline" onclick="event.stopPropagation();endCall()">📵</div>';
-      showToast('تم الرد'); soundClick();
-    }
-    function endCall(){ document.getElementById('island').className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; islandMode=null; showToast('انتهت المكالمة'); }
-    function startTimer(){
-      closeAllOverlays(); islandMode='timer';
-      document.getElementById('island').className='dynamic-island expanded';
-      let sec=60;
-      document.getElementById('islandContent').innerHTML='<div style="font-size:28px;font-weight:200;width:100%;text-align:center" id="timerDisplay">١:٠٠</div>';
-      const iv=setInterval(()=>{
-        sec--; if(sec<=0){clearInterval(iv);endCall();showToast('انتهى المؤقت');soundNotif();return;}
-        const el=document.getElementById('timerDisplay'); if(el) el.textContent='٠:'+String(sec).padStart(2,'0');
-      },1000);
-    }
-
-    // Music + Mini player
-    function toggleMusic(){
-      musicPlaying=!musicPlaying;
-      document.getElementById('ccPlayBtn').textContent=musicPlaying?'⏸':'▶️';
-      document.getElementById('miniPlayIcon').textContent=musicPlaying?'⏸':'▶️';
-      if(musicPlaying){
-        showIslandMusic();
-        document.getElementById('ccTrack').textContent='أغنية تجريبية';
-        document.getElementById('ccArtist').textContent='فنان تجريبي';
-        document.getElementById('miniPlayer').classList.add('show');
-        showToast('تشغيل الموسيقى');
-      } else {
-        if(islandMode==='music') toggleIsland();
-        document.getElementById('ccTrack').textContent='Not Playing';
-        document.getElementById('ccArtist').textContent='اضغط للتشغيل';
-        document.getElementById('miniPlayer').classList.remove('show');
-      }
-      soundClick(); vibrate(8);
-    }
-    function prevTrack(){ showToast('السابقة'); soundClick(); }
-    function nextTrack(){ showToast('التالية'); soundClick(); }
-
-    function openSwitcher(){ closeAllOverlays(false); document.getElementById('appSwitcher').classList.add('open'); soundClick(); vibrate(12); }
-    function closeSwitcher(e){ if(e&&e.target!==document.getElementById('appSwitcher'))return; document.getElementById('appSwitcher').classList.remove('open'); }
-
-    // Folders
-    function openFolderDemo(el){
-      const name=el.querySelector('.app-name')?.textContent||'مجلد';
-      document.getElementById('folderName').textContent='مجلد · '+name;
-      document.getElementById('folderApps').innerHTML=`
-        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#30d158,#34c759);width:52px;height:52px;font-size:24px">📞</div></div>
-        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#5ac8fa,#007aff);width:52px;height:52px;font-size:24px">🧭</div></div>
-        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#ff2d55,#ff375f);width:52px;height:52px;font-size:24px">🎵</div></div>
-        <div class="app"><div class="app-icon" style="background:linear-gradient(135deg,#8e8e93,#636366);width:52px;height:52px;font-size:24px">⚙️</div></div>
-      `;
-      document.getElementById('folderModal').classList.add('open');
-      soundClick(); vibrate(10);
-      showToast('مجلد (تجريبي)');
-    }
-    function closeFolder(e){
-      if(e&&e.target!==document.getElementById('folderModal')&&!e.target.classList.contains('folder-close')) return;
-      document.getElementById('folderModal').classList.remove('open');
-    }
-
-    function changeColor(c){
-      document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
-      document.querySelector('.color-dot[data-c="'+c+'"]').classList.add('active');
-      const phone=document.getElementById('phone'), home=document.getElementById('homeScreen'), lock=document.getElementById('lockScreen');
-      if(c==='orange'){
-        phone.style.borderColor='#e85d04'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(232,93,4,.45),inset 0 0 0 1px rgba(255,255,255,.06)';
-        home.style.background='linear-gradient(160deg,#2d1a0e 0%,#4a2511 40%,#1a0f08 100%)';
-        lock.style.background='linear-gradient(165deg,#2d1a0e 0%,#5c2e0e 40%,#1a0f08 100%)';
-      } else if(c==='blue'){
-        phone.style.borderColor='#1e3a5f'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(30,58,95,.5),inset 0 0 0 1px rgba(255,255,255,.06)';
-        home.style.background='linear-gradient(160deg,#0a1628 0%,#12253d 40%,#0a1520 100%)';
-        lock.style.background='linear-gradient(165deg,#0a1628 0%,#1a3050 40%,#0a1520 100%)';
-      } else {
-        phone.style.borderColor='#2c2c2e'; phone.style.boxShadow='0 0 0 2px #111,0 25px 60px -12px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.06)';
-        home.style.background='linear-gradient(160deg,#1a1a2e 0%,#16213e 45%,#0f3460 100%)';
-        lock.style.background='linear-gradient(165deg,#0f0c29 0%,#302b63 40%,#24243e 100%)';
-      }
-      soundClick();
-    }
-
-    function toggleFlash(){
-      flashOn=!flashOn;
-      const island=document.getElementById('island');
-      if(flashOn){ island.classList.add('expanded'); document.getElementById('islandContent').innerHTML='<div style="font-size:20px">🔦</div><div style="font-size:13px">الفلاش مفعل</div>'; showToast('الفلاش مفعل'); }
-      else { island.className='dynamic-island'; document.getElementById('islandContent').innerHTML=''; showToast('الفلاش مغلق'); }
-      soundClick();
-    }
-
-    function buildCalc(){
-      const btns=['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','','.','='];
-      const c=document.getElementById('calcBtns'); if(!c)return;
-      c.innerHTML=btns.map(b=>{
-        if(b==='')return'<div></div>';
-        const isOp='÷×−+=C±%'.includes(b);
-        return '<button style="padding:14px;border-radius:12px;border:none;font-size:18px;font-weight:500;background:'+(isOp?'#ff9f0a':'#333')+';color:#fff;cursor:pointer" onclick="calcPress(\''+b+'\')">'+b+'</button>';
-      }).join('');
-    }
-    let calcVal='0';
-    function calcPress(b){
-      const d=document.getElementById('calcDisplay'); if(!d)return;
-      if(b==='C')calcVal='0';
-      else if(b==='='){ try{calcVal=String(eval(calcVal.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')));}catch{calcVal='خطأ';} }
-      else if(calcVal==='0'&&!'÷×−+'.includes(b))calcVal=b;
-      else calcVal+=b;
-      d.textContent=calcVal; soundClick();
-    }
-
-    function isOverlayOpen(){
-      return document.getElementById('controlCenter').classList.contains('open')||
-             document.getElementById('notifCenter').classList.contains('open')||
-             document.getElementById('spotlight').classList.contains('open')||
-             document.getElementById('appSwitcher').classList.contains('open')||
-             document.getElementById('folderModal').classList.contains('open');
-    }
-    function closeAllOverlays(includeSwitcher=true){
-      document.getElementById('controlCenter').classList.remove('open');
-      document.getElementById('notifCenter').classList.remove('open');
-      document.getElementById('spotlight').classList.remove('open');
-      document.getElementById('folderModal').classList.remove('open');
-      if(includeSwitcher) document.getElementById('appSwitcher').classList.remove('open');
-      document.getElementById('spotlightInput').value='';
-      document.getElementById('spotlightResults').innerHTML='';
-    }
-    function showToast(msg){
-      const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-      setTimeout(()=>t.classList.remove('show'),1800);
-    }
-    function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
-
-    document.body.addEventListener('touchmove',e=>{
-      if(!e.target.closest('.app-content')&&!e.target.closest('.notif-center')&&!e.target.closest('.app-switcher')) e.preventDefault();
-    },{passive:false});
-
-    // Resume audio context on first interaction
-    document.body.addEventListener('touchstart',()=>{ if(audioCtx.state==='suspended') audioCtx.resume(); },{once:true});
-
-    aodTimeout=setTimeout(()=>{ if(!unlocked) document.getElementById('lockScreen').classList.add('aod'); },8000);
-
-    // Register trivial SW for PWA feel (optional)
-    if('serviceWorker' in navigator){
-      // inline minimal - skip real SW file for simplicity
-    }
-  </script>
+/* ===== LESSON ENGINE ===== */
+function build(u){const pool=C().U.flatMap(x=>x.v).concat(Q().my),q=[],v=shuf(u.v);
+v.slice(0,5).forEach(w=>{const o=shuf([w[1],...shuf(pool.filter(p=>p[1]!==w[1])).slice(0,3).map(p=>p[1])]);q.push({t:'mc',q:`ما معنى ${wd(w[0])}؟`,o,c:o.indexOf(w[1]),s:w[0],w})});
+v.slice(0,3).forEach(w=>q.push({t:'ty',q:`اكتب بالكلمة الصحيحة: <b>${w[1]}</b>`,a:alt(w),w}));
+if(v.length){const d=v[v.length-1];q.push({t:'ty',w:d,d:1,q:`<button class="sp" onclick="say('${d[0]}')">🔊 استمع</button> اكتب ما سمعت`,a:alt(d)})}
+if(v.length&&(window.SpeechRecognition||window.webkitSpeechRecognition)){const s=v[0];q.push({t:'sp',w:s,q:`انطق بصوت واضح: ${wd(s[0])}`,a:alt(s)})}
+if(v.length>=4)q.push({t:'mt',q:'طابق الكلمات مع معانيها',pr:v.slice(0,4),r:shuf([0,1,2,3]),sel:null,dn:[]});
+if(u.id==-1&&Q().cf.length>=2){const ws=[];Q().cf.forEach(p=>p.forEach(w=>{if(ws.length<4&&!ws.some(x=>x[0]==w[0]))ws.push(w)}));if(ws.length==4)q.push({t:'mt',q:'⚠️ كلمات تخلط بينها، طابقها',pr:ws,r:shuf([0,1,2,3]),sel:null,dn:[]})}
+u.e.forEach(e=>{if(e[0]=='mc'){const c=e[2][e[3]],o=shuf(e[2]);q.push({t:'mc',q:e[1],o,c:o.indexOf(c),x:e[4]})}else if(e[0]=='ty')q.push({t:'ty',q:e[1],a:e[2].split('|'),x:e[3]});else q.push({t:'or',q:e[1],a:[e[2]],p:shuf(e[2].split(' ')),x:e[3]})});
+return shuf(S.hard?q.map(x=>x.t=='mc'&&x.w?{t:'ty',q:`اكتب بالكلمة الصحيحة: <b>${x.w[1]}</b>`,a:alt(x.w),w:x.w}:x):q)}
+function start(i){const u=i==-1?{id:-1,v:shuf(due()).slice(0,10),e:[]}:i==-2?{id:-2,v:shuf(mix()).slice(0,10),e:[]}:i==-3?{id:-3,v:shuf(Q().my).slice(0,10),e:[]}:{...C().U[i],id:i};L={u,q:build(u),i:0,h:5,ok:0,fb:null,sel:null,ans:[],wr:new Set(),t0:Date.now()};lessonUI()}
+function addErr(w){L.wr.add(w[0])}
+function lessonUI(){document.body.classList.add('inl');const q=L.q[L.i],f=L.fb;let b='';
+if(q.t=='mc')b=q.o.map((o,i)=>`<button class="opt ${L.sel===i?'sel':''} ${f&&i==q.c?'ok':''} ${f&&L.sel===i&&!f.ok?'no':''}" dir="auto" ${f?'':`onclick="pick(${i})"`}>${o}</button>`).join('');
+if(q.t=='ty')b=`<input id="ti" dir="auto" autocapitalize="off" autocomplete="off" placeholder="اكتب هنا..." ${f?'disabled':''} value="${f?f.v.replace(/"/g,''):''}">`+(S.l=='es'&&!f?`<div class="kb" dir="ltr">${[...'ñáéíóú¿¡'].map(c=>`<button class="chip" onmousedown="event.preventDefault()" onclick="ins('${c}')">${c}</button>`).join('')}</div>`:'');
+if(q.t=='or')b=`<div class="ansbox" dir="ltr">${L.ans.map(i=>`<button class="chip" ${f?'':`onclick="unchip(${i})"`}>${q.p[i]}</button>`).join('')}</div><div class="pool" dir="ltr">${q.p.map((w,i)=>L.ans.includes(i)?'':`<button class="chip" ${f?'':`onclick="chip(${i})"`}>${w}</button>`).join('')}</div>`;
+if(q.t=='sp')b=f?'':`<button id="mic" class="big2" onclick="rec()">🎤 اضغط وانطق</button><button class="secondary big2" onclick="skipSp()">تخطي (لا أستطيع الآن)</button>`;
+if(q.t=='mt')b=`<div class="grid"><div dir="ltr">${q.pr.map((w,i)=>`<button class="opt ${q.dn.includes(i)?'ok':q.sel===i?'sel':''}" ${q.dn.includes(i)?'':`onclick="mtp(0,${i})"`}>${w[0]}</button>`).join('')}</div><div>${q.r.map(i=>`<button class="opt ${q.dn.includes(i)?'ok':''}" ${q.dn.includes(i)?'':`onclick="mtp(1,${i})"`}>${q.pr[i][1]}</button>`).join('')}</div></div>`;
+$('v').innerHTML=`<div class="lt"><button class="x" onclick="quit()">✕</button><div class="bar"><i style="width:${L.i/L.q.length*100}%"></i></div><span>❤️ ${L.h}</span></div><div class="card"><div class="qs" dir="auto">${q.q}</div></div>${b}`+
+(f?`<div class="fb ${f.ok?'g':'r'}"><b>${f.ok?(f.near?'تقريبا صحيح 👌':'ممتاز! ✓'):'إجابة خاطئة ✗'}</b>${f.c&&(!f.ok||f.near)?`<div>الصحيح: <span class="en">${f.c}</span></div>`:''}${q.t=='sp'&&f.v?`<div class="muted">سمعتك: <span class="en">${f.v}</span></div>`:''}${!f.ok&&q.x?`<div class="muted" style="margin-top:6px">💡 ${q.x}</div>`:''}<button onclick="next()">متابعة</button></div>`:q.t=='mt'||q.t=='sp'?'':`<button class="big2" onclick="check()">تحقق</button>`);
+if(q.t=='ty'&&!f){$('ti').focus();if(q.d&&!q.pl){q.pl=1;say(q.w[0])}}}
+const pick=i=>{L.sel=i;lessonUI()},chip=i=>{L.ans.push(i);lessonUI()},unchip=i=>{L.ans=L.ans.filter(x=>x!=i);lessonUI()};
+const ins=c=>{const t=$('ti');t.value+=c;t.focus()};
+function mtp(s,i){const q=L.q[L.i];if(s==0){q.sel=i;return lessonUI()}if(q.sel===null)return;
+if(q.sel===i){q.dn.push(i);srs(q.pr[i],true);rec0('mt',true);q.sel=null;beep(1);if(q.dn.length==4){L.ok++;L.fb={ok:true,c:'',v:''}}}
+else{L.h--;beep(0);srs(q.pr[q.sel],false);rec0('mt',false);addErr(q.pr[q.sel]);q.sel=null;if(L.h<=0)return end(false)}
+lessonUI()}
+function check(){const q=L.q[L.i];let ok,c,v='',near=false;
+if(q.t=='mc'){if(L.sel===null)return;ok=L.sel==q.c;c=q.o[q.c]}
+else if(q.t=='ty'){v=$('ti').value;if(!v.trim())return;c=q.a[0];ok=q.a.some(a=>norm(a)==norm(v));if(!ok){near=q.a.some(a=>norm(a).length>3&&lev(norm(a),norm(v))==1);ok=near}}
+else{if(!L.ans.length)return;ok=norm(L.ans.map(i=>q.p[i]).join(' '))==norm(q.a[0]);c=q.a[0]}
+L.fb={ok,c,v,near};beep(ok);rec0(q.t,ok);if(q.w)srs(q.w,ok);
+if(!ok&&q.t=='mc'&&q.w){const c2=C().U.flatMap(u=>u.v).find(w=>w[1]==q.o[L.sel]);if(c2){const cf=Q().cf;cf.unshift([q.w,c2]);cf.length=Math.min(cf.length,20)}}
+if(ok)L.ok++;else{L.h--;if(q.w)addErr(q.w)}
+if(q.s)say(q.s);else if(ok&&q.t!='mc'&&q.t!='ty')say(c);
+lessonUI()}
+function next(){if(L.h<=0)return end(false);L.i++;L.sel=null;L.ans=[];L.fb=null;if(L.i>=L.q.length)return end(true);lessonUI()}
+function end(win){addT();const n=L.q.length,acc=L.ok/n,id=L.u.id;let xp=0,st=0;
+if(win){xp=10+L.ok*2;st=acc>=.9?3:acc>=.7?2:1;if(id>=0)Q().done[id]=Math.max(Q().done[id]||0,st);if(id==-2&&S.dc!==T()){xp+=20;S.dc=T()}award(xp)}
+L=null;
+$('v').innerHTML=`<div class="card hero" style="text-align:center"><div class="big">${win?'🎉 أحسنت!':'💔 نفدت القلوب'}</div>${win?`<div class="stat">+${xp} XP</div><div style="font-size:32px">${'⭐'.repeat(st)}</div><p class="muted">الدقة ${Math.round(acc*100)}%</p>`:`<p class="muted">لا بأس، الأخطاء طريق التعلم. حاول مرة أخرى.</p>`}</div><button class="big2" onclick="${win?'draw()':`start(${id})`}">${win?'متابعة':'إعادة المحاولة'}</button>`}
+function quit(){if(!L||confirm('الخروج؟ سيضيع تقدم هذا الدرس.')){addT();draw()}}
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!L)return;L.fb?next():(!['mt','sp'].includes(L.q[L.i].t)&&check())});
+loadHash();draw();
+if('serviceWorker' in navigator&&/^http/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
 </body>
 </html>
