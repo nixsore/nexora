@@ -3,66 +3,83 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
+<meta name="theme-color" content="#f4ecdf" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1324" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Readex+Pro:wght@400;500;700&display=swap">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Nexora</title>
 <style>
-:root{--bg:#07111f;--text:#f3f7ff;--muted:#9db0c7;--a:#55d7ff;--b:#8d7cff;--good:#67e8a5;--bad:#ff7181}
+:root{--bg:#f4ecdf;--card:#fffaf1;--card2:#eee3cf;--line:#dfd0b5;--text:#1b1f3a;--muted:#6b6879;--a:#2641d9;--b:#f2a516;--on:#fff;--good:#1e9b68;--bad:#d4403a;--r:20px}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1324;--card:#181d36;--card2:#222a4d;--line:#2d3560;--text:#f4efe6;--muted:#a5a1b8;--a:#8493ff;--b:#ffb938;--on:#0f1324;--good:#4cd19a;--bad:#ff7a73}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:radial-gradient(circle at top,#172d4b 0,#07111f 45%,#050b13 100%) fixed;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;padding-bottom:84px}
+body{margin:0;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath fill='none' stroke='%23888' stroke-opacity='.13' stroke-width='1.2' d='M28 6l6 12 12-6-6 12 12 6-12 6 6 12-12-6-6 12-6-12-12 6 6-12-12-6 12-6-6-12 12 6z'/%3E%3C/svg%3E") fixed;color:var(--text);font-family:"Readex Pro","Segoe UI",Tahoma,system-ui,sans-serif;line-height:1.55;padding-bottom:108px}
 .app{max-width:760px;margin:auto;padding:14px}
-.en{direction:ltr;unicode-bidi:isolate;display:inline-block}
-.m{color:#6cb8ff}.f{color:#ff9ccf}
-#top{display:flex;justify-content:space-between;align-items:center;padding:6px 0 12px}
-.logo{font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.en{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:"Fraunces",Georgia,serif;font-weight:600}
+.m{color:#3b7bff}.f{color:#e0529b}
+#top{display:flex;justify-content:space-between;align-items:center;padding:6px 0 14px}
+.logo,.big,.stat{font-family:"Fraunces","Readex Pro",Georgia,serif}
+.logo{font-size:30px;font-weight:800;color:var(--a);letter-spacing:-.5px}.logo:before{content:"✦ ";color:var(--b)}
+.hero .logo{color:var(--on)}
 .muted{color:var(--muted);font-size:13px}
-button{border:0;border-radius:13px;padding:11px 15px;font:inherit;font-weight:800;background:var(--a);color:#031018;cursor:pointer}
-button.secondary,.sp,.x{background:#1b334d;color:var(--text)}
-button.danger{background:#52212c;color:#ffe2e6}
-.sp{padding:6px 10px}.x{padding:8px 12px}
-.big2{width:100%;padding:15px;font-size:17px;margin:10px 0}
-.card{background:rgba(14,28,46,.94);border:1px solid #24415f;border-radius:18px;padding:15px;margin:10px 0}
-.hero{background:linear-gradient(135deg,#102b48,#172650)}
-.big{font-size:24px;font-weight:900}.stat{font-size:26px;font-weight:900}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid .card{margin:0}
-.bar{height:9px;background:#07111f;border-radius:99px;overflow:hidden;flex:1;margin:8px 0}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b));transition:width .3s}
-.pill{display:inline-block;background:#172f48;border:1px solid #2a4866;border-radius:99px;padding:5px 10px;margin:3px;font-size:13px}
-.unit{display:flex;align-items:center;gap:12px;cursor:pointer}.unit.lock{opacity:.45;cursor:default}
-.ic{font-size:30px;width:50px;height:50px;border-radius:15px;background:#142840;display:grid;place-items:center}
-.w{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1d3550}
-table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:8px;border-bottom:1px solid #1d3550}.pr{color:var(--a);font-weight:800}
+button{border:0;border-bottom:4px solid color-mix(in srgb,var(--a) 65%,#000);border-radius:14px;padding:11px 16px;font:inherit;font-weight:700;background:var(--a);color:var(--on);cursor:pointer;transition:transform .08s}
+button:active{transform:translateY(2px);border-bottom-width:2px}
+button.secondary,.sp,.x{background:var(--card2);color:var(--text);border-bottom-color:var(--line)}
+button.danger{background:var(--bad);color:#fff;border-bottom-color:rgba(0,0,0,.25)}
+.sp{padding:6px 11px;border-bottom-width:3px}.x{padding:8px 13px}
+.big2{width:100%;padding:16px;font-size:17px;margin:10px 0;border-bottom-width:5px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.hero{background:var(--a);border-color:transparent;color:var(--on)}.hero .muted{color:inherit;opacity:.85}
+.big{font-size:25px;font-weight:800;line-height:1.3}.stat{font-size:28px;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid .card{margin:0}
+.bar{height:14px;background:var(--card2);border-radius:99px;overflow:hidden;flex:1;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--b);border-radius:99px;transition:width .3s}
+.hero .bar{background:rgba(0,0,0,.22)}
+.pill{display:inline-block;background:var(--card2);border:2px solid var(--line);border-radius:99px;padding:4px 11px;margin:3px;font-size:13px;font-weight:700}
+.unit{display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s}.unit:active{transform:scale(.985)}.unit.lock{opacity:.5;cursor:default}
+.ic{font-size:28px;width:54px;height:54px;border-radius:16px;background:color-mix(in srgb,var(--b) 28%,var(--card));display:grid;place-items:center;flex:none}
+.w{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:2px dashed var(--line)}
+table{width:100%;border-collapse:collapse;margin-top:8px}td{padding:8px;border-bottom:2px dashed var(--line)}.pr{color:var(--a);font-weight:800}
 .good{color:var(--good)}
-input,textarea{width:100%;background:#081522;border:1px solid #29445f;color:var(--text);border-radius:12px;padding:13px;font:inherit;font-size:16px;margin:8px 0}
+input,textarea{width:100%;background:var(--card);border:2px solid var(--line);color:var(--text);border-radius:14px;padding:13px;font:inherit;font-size:16px;margin:8px 0}
+input:focus,textarea:focus{outline:0;border-color:var(--a)}
 .lt{display:flex;align-items:center;gap:10px;padding:6px 0}
-.qs{font-size:19px;line-height:1.7;font-weight:700}
-.opt{display:block;width:100%;text-align:start;background:#12283f;color:var(--text);border:2px solid #294765;margin:8px 0;padding:14px;font-size:16px}
-.opt.sel{border-color:var(--a)}.opt.ok{border-color:var(--good);background:#123626}.opt.no{border-color:var(--bad);background:#40202a}
+.qs{font-size:20px;line-height:1.75;font-weight:700}
+.opt{display:block;width:100%;text-align:start;background:var(--card);color:var(--text);border:2px solid var(--line);border-bottom-width:4px;margin:9px 0;padding:14px;font-size:16px}
+.opt.sel{border-color:var(--a);background:color-mix(in srgb,var(--a) 12%,var(--card))}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 16%,var(--card))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--card))}
 .ansbox,.pool,.kb{display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:14px}
-.ansbox{min-height:64px;background:#081522;border:1px dashed #29445f;margin:8px 0}
-.chip{background:#12283f;color:var(--text);border:2px solid #294765;padding:9px 13px}
-.fb{border-radius:16px;padding:14px;margin-top:12px}.fb.g{background:#123626;color:var(--good)}.fb.r{background:#40202a;color:var(--bad)}.fb button{width:100%;margin-top:10px}
-#nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a1626;border-top:1px solid #24415f;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
-#nav button{flex:1;background:none;color:var(--muted);font-size:11px;padding:6px 2px}#nav button.on{color:var(--a)}
+.ansbox{min-height:68px;border:2px dashed var(--line);margin:8px 0}
+.chip{background:var(--card);color:var(--text);border:2px solid var(--line);border-bottom-width:4px;padding:9px 14px}
+.fb{border-radius:18px;padding:14px;margin-top:12px;border:2px solid;color:var(--text)}
+.fb.g{background:color-mix(in srgb,var(--good) 14%,var(--card));border-color:var(--good)}.fb.g b:first-child{color:var(--good)}
+.fb.r{background:color-mix(in srgb,var(--bad) 12%,var(--card));border-color:var(--bad)}.fb.r b:first-child{color:var(--bad)}
+.fb button{width:100%;margin-top:10px}
+#nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:10px;right:10px;max-width:520px;margin:auto;display:flex;background:var(--card);border:2px solid var(--line);border-radius:26px;box-shadow:0 10px 28px rgba(20,20,60,.14);padding:6px}
+#nav button{flex:1;background:none;color:var(--muted);border:0;border-radius:18px;font-size:11px;padding:6px 2px}
+#nav button.on{background:color-mix(in srgb,var(--a) 14%,transparent);color:var(--a)}
 #nav span{display:block;font-size:20px}
 body.inl #nav,body.inl #top{display:none}
+.tw{overflow-x:auto}td{white-space:nowrap}
 body.bigf{font-size:19px}body.bigf .muted{font-size:16px}body.bigf .qs{font-size:23px}
 </style>
 </head>
 <body>
 <div class="app"><div id="top"></div><main id="v"></main></div>
 <nav id="nav">
+<button data-t="lessons" onclick="go('lessons')"><span>🎓</span>الدروس</button>
 <button data-t="path" onclick="go('path')"><span>🏠</span>المسار</button>
 <button data-t="review" onclick="go('review')"><span>🧠</span>مراجعة</button>
 <button data-t="dict" onclick="go('dict')"><span>📖</span>قاموس</button>
-<button data-t="verbs" onclick="go('verbs')"><span>🔤</span>أفعال</button>
+
 <button data-t="mine" onclick="go('mine')"><span>✍️</span>قاموسي</button>
 <button data-t="me" onclick="go('me')"><span>👤</span>ملفي</button>
 </nav>
 <script>
 const $=i=>document.getElementById(i),T=()=>new Date().toISOString().slice(0,10),yest=()=>new Date(Date.now()-864e5).toISOString().slice(0,10);
 const P0=()=>({xp:0,done:{},err:[],w:{}});
-let S={l:'',streak:0,last:'',day:'',dxp:0,h:{},acc:{},snd:1,dc:'',tm:{},goal:30,hard:0,big:0,p:{en:P0(),es:P0()}};
+let S={l:'',streak:0,last:'',day:'',dxp:0,h:{},acc:{},snd:1,dc:'',tm:{},goal:30,hard:0,big:0,gb:{},ls:{},ui:'ar',p:{en:P0(),es:P0()}};
 try{const o=JSON.parse(localStorage.getItem('nx8'));if(o)S=Object.assign(S,o)}catch(e){}
 const save=()=>{try{localStorage.setItem('nx8',JSON.stringify(S))}catch(e){}};
 const C=()=>LG[S.l],Q=()=>{const p=S.p[S.l];p.w=p.w||{};p.my=p.my||[];p.cf=p.cf||[];return p};
@@ -134,20 +151,20 @@ e:[['or','أحتاج موعدا','Necesito una cita'],['mc','كيف تقول "ع
 ]}};
 
 /* ===== VIEWS ===== */
-let tab='path',L=null;
+let tab='lessons',L=null;
 const go=t=>{tab=t;draw()};
-const setL=k=>{S.l=k;save();tab='path';draw()},sw=()=>{S.l='';draw()};
-function pick0(){document.body.classList.add('inl');$('v').innerHTML=`<div class="card hero"><div class="logo">Nexora</div><div class="big">شنو بغيتي تتعلم؟ 🌍</div><div class="muted">لكل لغة تقدم مستقل، وتقدر تبدل فأي وقت.</div></div>`+Object.keys(LG).map(k=>`<div class="card unit" onclick="setL('${k}')"><div class="ic">${LG[k].f}</div><div style="flex:1"><b>${LG[k].n}</b><div class="muted">${LG[k].s} • ${S.p[k].xp} XP</div></div></div>`).join('')}
-function draw(){WK=0;try{speechSynthesis.cancel()}catch(e){}document.body.classList.toggle('bigf',!!S.big);L=null;document.body.classList.remove('inl');if(!S.l)return pick0();
+const setL=k=>{S.l=k;save();tab='lessons';draw()},sw=()=>{S.l='';draw()};
+function pick0(){document.body.classList.add('inl');$('v').innerHTML=`<div class="card hero"><div class="logo">Nexora</div><div class="big">${tt('pick')}</div><div class="muted">${tt('pickd')}</div><button class="sp" onclick="tUI()">${S.ui=='en'?'العربية':'English'}</button></div>`+Object.keys(LG).map(k=>`<div class="card unit" onclick="setL('${k}')"><div class="ic">${LG[k].f}</div><div style="flex:1"><b>${LG[k].n}</b><div class="muted">${LG[k].s} • ${S.p[k].xp} XP</div></div></div>`).join('')}
+function draw(){WK=0;try{speechSynthesis.cancel()}catch(e){}document.body.classList.toggle('bigf',!!S.big);document.documentElement.dir=S.ui=='en'?'ltr':'rtl';document.documentElement.lang=S.ui;document.querySelectorAll('#nav button').forEach(b=>{b.lastChild.textContent=NAVL[b.dataset.t][S.ui=='en'?1:0]});L=null;document.body.classList.remove('inl');if(!S.l)return pick0();
 const l=lvl();
-$('top').innerHTML=`<div><div class="logo">Nexora</div><div class="muted">${C().n} • ${l.n}</div></div><div><button class="sp" onclick="sw()">${C().f} ▾</button><span class="pill">🔥 ${streak()}</span><span class="pill">⚡ ${Q().xp}</span></div>`;
-$('v').innerHTML=({path:pathV,review:revV,dict:dictV,verbs:()=>`<div class="card hero"><div class="big">🔤 تصريف الأفعال</div><div class="muted">المضارع والماضي</div></div>`+Object.keys(C().V).map(vt).join(''),me:meV,mine:mineV})[tab]();
+$('top').innerHTML=`<div><div class="logo">Nexora</div><div class="muted">${C().n} • ${l.n}</div></div><div><button class="sp" onclick="tUI()">${S.ui=='en'?'ع':'EN'}</button> <button class="sp" onclick="sw()">${C().f} ▾</button><span class="pill">🔥 ${streak()}</span><span class="pill">⚡ ${Q().xp}</span></div>`;
+$('v').innerHTML=({path:pathV,review:revV,dict:dictV,verbs:()=>`<div class="card hero"><div class="big">🔤 تصريف الأفعال</div><div class="muted">المضارع والماضي</div></div>`+Object.keys(C().V).map(vt).join(''),me:meV,mine:mineV,lessons:lessonsV})[tab]();
 document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
 window.scrollTo(0,0)}
 const vt=k=>{const v=C().V[k];return `<div class="card"><b class="en">${S.l=='en'?'to ':''}${k}</b> — ${v.a} <button class="sp" onclick="say('${k}')">🔊</button><table>${C().pr.map((p,i)=>`<tr><td class="en">${p}</td><td><span class="en pr">${v.f[i]}</span></td></tr>`).join('')}<tr><td>${C().pl}</td><td><span class="en pr">${v.p}</span></td></tr></table></div>`};
 function pathV(){const g=Math.min(100,dxp()/S.goal*100),D=Q().done;
 return `<div class="card hero"><div class="big">رحلتك اللغوية 🚀</div><div class="muted">هدف اليوم: ${dxp()} / ${S.goal} XP</div><div style="display:flex"><div class="bar"><i style="width:${g}%"></i></div></div></div>`+
-(mix().length>=4?`<div class="card unit" onclick="start(-2)"><div class="ic">⚡</div><div style="flex:1"><b>تحدي اليوم</b><div class="muted">${S.dc===T()?'تم ✓ (تدريب حر بدون مكافأة)':'خليط من كل كلماتك • +20 XP'}</div></div></div>`:'')+C().U.map((u,i)=>{const open=i==0||D[i-1],st=D[i]||0;
+`<div class="card unit" onclick="gbHome()"><div class="ic">🧱</div><div style="flex:1"><b>ورشة بناء الجمل</b><div class="muted">بلوكات ملونة • 5 مراحل</div></div></div><div class="card unit" onclick="arHome()"><div class="ic">🔤</div><div style="flex:1"><b class="en">${AR[S.l].t}</b><div class="muted">شجرة قرار + ${AR[S.l].i.length} تمرين${S.gb['ar'+S.l]!=null?' • أفضل نتيجة: '+S.gb['ar'+S.l]:''}</div></div></div>`+(mix().length>=4?`<div class="card unit" onclick="start(-2)"><div class="ic">⚡</div><div style="flex:1"><b>تحدي اليوم</b><div class="muted">${S.dc===T()?'تم ✓ (تدريب حر بدون مكافأة)':'خليط من كل كلماتك • +20 XP'}</div></div></div>`:'')+C().U.map((u,i)=>{const open=i==0||D[i-1],st=D[i]||0;
 return `<div class="card unit ${open?'':'lock'}" ${open?`onclick="intro(${i})"`:''}><div class="ic">${open?u.i:'🔒'}</div><div style="flex:1"><b>${u.n}</b><div class="muted">${u.v.length} كلمات • ${u.d}</div></div><div>${'⭐'.repeat(st)}</div></div>`}).join('')}
 const wrow=w=>`<div class="w"><span>${wd(w[0])} — ${w[1]}</span><button class="sp" onclick="say('${w[0]}')">🔊</button><button class="sp" onclick="say('${w[0]}',.5)">🐢</button></div>`;
 function intro(i){const u=C().U[i];
@@ -178,7 +195,7 @@ function skipSp(){L.q.splice(L.i,1);if(L.i>=L.q.length)return end(true);lessonUI
 
 /* ===== PERSONAL DECK, SHARING, STATS, WALK MODE ===== */
 let WK=0;
-const clean=t=>t.replace(/[<>"&`\\]/g,'').replace(/'/g,'’').trim().slice(0,60),esc=t=>t.replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),tg=on=>on?'background:var(--a);color:#031018':'';
+const clean=t=>t.replace(/[<>"&`\\]/g,'').replace(/'/g,'’').trim().slice(0,60),esc=t=>t.replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),tg=on=>on?'background:var(--a);color:var(--on)':'';
 const addW=(a,b)=>{a=clean(String(a));b=clean(String(b));if(a&&b&&!Q().my.some(w=>w[0]==a)){Q().my.push([a,b]);return 1}return 0};
 function addMy(){if(addW($('mw').value,$('mt2').value)){save();draw()}}
 function delMy(i){Q().my.splice(i,1);save();draw()}
@@ -195,12 +212,115 @@ function mineV(){const M=Q().my;return `<div class="card hero"><div class="big">
 function addT(){if(L&&L.t0){const d=T();S.tm[d]=(S.tm[d]||0)+Math.min(30,(Date.now()-L.t0)/6e4);save()}}
 const dk=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
 const statsH=()=>{const l=lvl(),avg=[0,1,2,3,4,5,6].reduce((a,i)=>a+(S.h[dk(i)]||0),0)/7,tot=Math.round(Object.values(S.tm).reduce((a,b)=>a+b,0)),td=Math.round(S.tm[T()]||0),soon=Object.values(Q().w).filter(o=>o.d>T()&&o.d<=addD(7)).length;
-const hm=[...Array(28)].map((_,i)=>{const x=S.h[dk(27-i)]||0;return `<i style="display:inline-block;width:11%;aspect-ratio:1;margin:1%;border-radius:4px;background:${x?`rgba(85,215,255,${Math.min(1,.25+x/60)})`:'#12283f'}"></i>`}).join('');
+const hm=[...Array(28)].map((_,i)=>{const x=S.h[dk(27-i)]||0;return `<i style="display:inline-block;width:11%;aspect-ratio:1;margin:1%;border-radius:4px;background:${x?`color-mix(in srgb,var(--a) ${Math.round(Math.min(1,.25+x/60)*100)}%,transparent)`:'var(--card2)'}"></i>`}).join('');
 return `<div class="grid"><div class="card"><div class="muted">وقت التعلم اليوم</div><div class="stat">${td} د</div></div><div class="card"><div class="muted">الإجمالي</div><div class="stat">${tot} د</div></div></div>
 <div class="card"><b>🔮 التوقع</b><p class="muted">${l.nx?(avg>0?`بوتيرتك (${Math.round(avg)} XP/يوم) تصل المستوى التالي بعد ~${Math.ceil(l.nx/avg)} يوم`:'ابدأ التعلم لنحسب لك التوقع'):'وصلت لأعلى مستوى!'}<br>كلمات تستحق المراجعة خلال 7 أيام: ${soon}</p></div>
 <div class="card"><b>🗓️ آخر 28 يوم</b><div dir="ltr" style="margin-top:8px">${hm}</div></div>
 <div class="card"><b>⚙️ الإعدادات</b><div style="margin-top:8px"><span class="muted">الهدف اليومي: </span>${[10,30,50].map(g=>`<button class="sp" style="${tg(S.goal==g)}" onclick="S.goal=${g};save();draw()">${g}</button>`).join(' ')}</div><div style="margin-top:8px"><button class="sp" style="${tg(S.hard)}" onclick="S.hard=${S.hard?0:1};save();draw()">🔥 الوضع الصعب: ${S.hard?'مفعل':'مطفأ'}</button> <button class="sp" style="${tg(S.big)}" onclick="S.big=${S.big?0:1};save();draw()">🔠 قراءة سهلة</button></div></div>`};
 function walk(i){const u=C().U[i];let k=0;WK=1;speechSynthesis.cancel();const step=()=>{if(!WK||k>=u.v.length)return;const w=u.v[k++],a=new SpeechSynthesisUtterance(w[0]);a.lang=C().t;a.rate=.85;a.onend=()=>{const b=new SpeechSynthesisUtterance(w[1]);b.lang='ar-SA';b.onend=()=>setTimeout(step,600);speechSynthesis.speak(b)};speechSynthesis.speak(a)};step()}
+
+/* ===== GRAMMAR LAB: SENTENCE BUILDER + ARTICLES ===== */
+S.gb=S.gb||{};
+const BT={S:['فاعل','#6cb8ff'],V:['فعل','#ff7181'],O:['مفعول','#67e8a5'],A:['صفة','#c9a0ff'],P:['مكان','#ffd36b'],T:['زمن','#9db0c7'],N:['نفي','#ff9f5a'],Q:['سؤال','#55d7ff'],C:['رابط','#f78fb3'],X:['جملة','#8d7cff']};
+const SB={
+en:[
+['1 • فاعل + فعل + مفعول','فاعل + فعل + مفعول',[['أنا آكل التفاح','I:S/eat:V/apples:O'],['هي تحب القهوة','She:S/likes:V/coffee:O'],['هم يدرسون الإنجليزية','They:S/study:V/English:O'],['نحن نشاهد فيلما','We:S/watch:V/a movie:O']]],
+['2 • إضافة الصفة','فاعل + فعل + صفة',[['أنا سعيد','I:S/am:V/happy:A'],['الطقس بارد اليوم','The weather:S/is:V/cold:A/today:T'],['هو طالب ذكي','He:S/is:V/a smart:A/student:O'],['القهوة ساخنة','The coffee:S/is:V/hot:A']]],
+['3 • المكان والزمن','فاعل + فعل + مفعول + مكان + زمن',[['أنا أدرس في المكتبة كل يوم','I:S/study:V/in the library:P/every day:T'],['هم لعبوا كرة القدم أمس','They:S/played:V/football:O/yesterday:T'],['نحن نأكل في المطعم','We:S/eat:V/at the restaurant:P'],['هي تعمل في المدرسة','She:S/works:V/at school:P']]],
+['4 • النفي والسؤال','Do / Does + فاعل + فعل أساسي',[['أنا لا أحب الشاي','I:S/do not:N/like:V/tea:O'],['هي لا تعمل اليوم','She:S/does not:N/work:V/today:T'],['هل تحب القهوة؟','Do:Q/you:S/like:V/coffee:O'],['أين تعيش؟','Where:Q/do:Q/you:S/live:V']]],
+['5 • الربط بين الجمل','جملة + رابط + جملة',[['بقيت في البيت لأن الجو كان ممطرا','I stayed home:X/because:C/it was rainy:X'],['هو متعب لذلك ينام مبكرا','He is tired:X/so:C/he sleeps early:X'],['أحب الشاي لكنني لا أحب القهوة','I like tea:X/but:C/I do not like coffee:X']]]],
+es:[
+['1 • فاعل + فعل + مفعول','فاعل + فعل + مفعول',[['أنا آكل التفاح','Yo:S/como:V/manzanas:O'],['هي تشرب القهوة','Ella:S/bebe:V/café:O'],['نحن نتكلم الإسبانية','Nosotros:S/hablamos:V/español:O'],['هم يكتبون رسالة','Ellos:S/escriben:V/una carta:O']]],
+['2 • إضافة الصفة','فاعل + فعل (ser/estar) + صفة',[['أنا سعيد','Yo:S/estoy:V/contento:A'],['هي طويلة','Ella:S/es:V/alta:A'],['الطعام جيد','La comida:S/está:V/buena:A']]],
+['3 • المكان والزمن','فاعل + فعل + مكان + زمن',[['أنا أدرس في المكتبة كل يوم','Yo:S/estudio:V/en la biblioteca:P/todos los días:T'],['نحن نأكل في المطعم','Nosotros:S/comemos:V/en el restaurante:P'],['هي تعمل في المدرسة','Ella:S/trabaja:V/en la escuela:P']]],
+['4 • النفي والسؤال','no + فعل  |  ¿سؤال + فعل؟',[['أنا لا أشرب الشاي','Yo:S/no:N/bebo:V/té:O'],['هل تتكلم الإنجليزية؟','¿Hablas:V/inglés?:O'],['أين تسكن؟','¿Dónde:Q/vives?:V']]],
+['5 • الربط بين الجمل','جملة + رابط + جملة',[['بقيت في البيت لأنها كانت تمطر','Me quedé en casa:X/porque:C/llovía:X'],['أنا متعب لذلك أنام','Estoy cansado:X/por eso:C/duermo:X'],['أحب الشاي لكن لا أحب القهوة','Me gusta el té:X/pero:C/no me gusta el café:X']]]]};
+let G=null;
+const gbParse=it=>it[1].split('/').map(b=>{const j=b.lastIndexOf(':');return[b.slice(0,j),b.slice(j+1)]});
+function gbHome(){G=null;const B=S.gb[S.l]||{};$('v').innerHTML=`<button class="secondary" onclick="draw()">→ رجوع</button><div class="card hero"><div class="big">🧱 ورشة بناء الجمل</div><p class="muted">لكل نوع كلمة لون. رتّب البلوكات لتبني الجملة الصحيحة، وانتبه للقالب.</p><div>${Object.values(BT).map(b=>`<span class="pill" style="color:${b[1]};border-color:${b[1]}">${b[0]}</span>`).join('')}</div></div>`+SB[S.l].map((t,i)=>`<div class="card unit" onclick="gbStart(${i})"><div class="ic">🧱</div><div style="flex:1"><b>${t[0]}</b><div class="muted">${t[2].length} جمل</div></div><div>${B[i]==t[2].length?'⭐':B[i]!=null?B[i]+'/'+t[2].length:''}</div></div>`).join('');window.scrollTo(0,0)}
+function gbStart(k){G={k,q:shuf(SB[S.l][k][2]),i:0,ok:0};gbQ()}
+function gbQ(){G.b=gbParse(G.q[G.i]);G.ans=[];G.pool=shuf(G.b.map((_,i)=>i));G.fb=null;gbR()}
+const gbChip=(i,f,fn)=>{const b=G.b[i],c=BT[b[1]][1];return `<button class="chip" style="border-color:${c};color:${c}" ${f?'':`onclick="${fn}(${i})"`}>${b[0]}</button>`};
+function gbR(){const st=SB[S.l][G.k],f=G.fb;
+$('v').innerHTML=`<div class="lt"><button class="x" onclick="gbHome()">✕</button><div class="bar"><i style="width:${G.i/G.q.length*100}%"></i></div></div><div class="card"><div class="muted">القالب: ${st[1]}</div><div class="qs" dir="auto">${G.q[G.i][0]}</div></div><div class="ansbox" dir="ltr">${G.ans.map(i=>gbChip(i,f,'gbUn')).join('')}</div><div class="pool" dir="ltr">${G.pool.filter(i=>!G.ans.includes(i)).map(i=>gbChip(i,f,'gbPk')).join('')}</div>`+
+(f?`<div class="fb ${f.ok?'g':'r'}"><b>${f.ok?'ممتاز! ✓':'الترتيب غير صحيح ✗'}</b>${f.ok?'':`<div>الصحيح:<div class="pool" dir="ltr">${G.b.map((_,i)=>gbChip(i,1)).join('')}</div></div>`}<button onclick="gbNx()">متابعة</button></div>`:`<button class="big2" onclick="gbCk()">تحقق</button>`)}
+const gbPk=i=>{G.ans.push(i);gbR()},gbUn=i=>{G.ans=G.ans.filter(x=>x!=i);gbR()};
+function gbCk(){if(!G.ans.length)return;const ok=norm(G.ans.map(i=>G.b[i][0]).join(' '))==norm(G.b.map(b=>b[0]).join(' '));G.fb={ok};beep(ok);rec0('or',ok);if(ok)G.ok++;gbR()}
+function gbNx(){G.i++;if(G.i<G.q.length)return gbQ();const n=G.q.length,B=S.gb[S.l]=S.gb[S.l]||{},xp=5+G.ok*3;B[G.k]=Math.max(B[G.k]||0,G.ok);award(xp);$('v').innerHTML=`<div class="card hero" style="text-align:center"><div class="big">🎉 ${G.ok}/${n}</div><div class="stat">+${xp} XP</div></div><button class="big2" onclick="gbHome()">متابعة</button>`}
+const AR={
+en:{t:'a / an / the',o:[['a','a'],['an','an'],['the','the'],['-','بلا أداة']],
+x:`<div class="card"><b>🌳 شجرة القرار</b><ol class="muted" style="line-height:2"><li>هل الشيء <b>معروف</b> للطرفين، أو ذُكر قبل، أو <b>وحيد</b> (the sun)؟ ← <b class="en">the</b></li><li>إن لا: هل هو <b>مفرد يُعدّ</b>؟ ← <b class="en">a</b> (وتصبح <b class="en">an</b> قبل <u>صوت</u> متحرك)</li><li>جمع، أو غير معدود، أو عام؟ ← <b>بلا أداة</b></li></ol></div><div class="card"><b>🔊 القاعدة للصوت لا للحرف</b><p><span class="en">an hour • an umbrella • <b>a</b> university • <b>a</b> one-day trip</span></p></div><div class="card"><b>🚫 بلا أداة</b><p><span class="en">have breakfast • speak English • go to school / bed / work</span></p></div><div class="card"><b>✅ دائما the</b><p><span class="en">play the piano • the moon • the best</span></p></div>`,
+i:[['I have ___ apple.','an','apple تبدأ بصوت متحرك → an'],['She is ___ teacher.','a','مهنة، مفرد معدود → a'],['He is ___ honest man.','an','حرف h صامت، فالنطق يبدأ بصوت متحرك → an'],['I study at ___ university.','a','university تُنطق "يو-"، صوت ساكن → a'],['Close ___ door, please.','the','باب معروف للمتكلم والسامع → the'],['Look at ___ moon!','the','وحيد في الوجود → the'],['I like ___ music.','-','موسيقى بشكل عام (غير معدود وعام) → بلا أداة'],['We eat ___ breakfast at 7.','-','أسماء الوجبات بلا أداة'],['I saw a dog. ___ dog was big.','the','ذُكر من قبل → the'],['She plays ___ piano.','the','الآلات الموسيقية مع the'],['He goes to ___ school every day.','-','الغرض الأساسي من المكان (الدراسة) → بلا أداة'],['I need ___ umbrella.','an','umbrella تبدأ بصوت متحرك → an'],['___ children love games.','-','جمع عام → بلا أداة'],['It is ___ one-hour trip.','a','one تُنطق "وان"، صوت ساكن → a'],['Paris is ___ capital of France.','the','عاصمة واحدة محددة → the']]},
+es:{t:'el / la / un / una',o:[['el','el'],['la','la'],['un','un'],['una','una']],
+x:`<div class="card"><b>⚖️ الجنس والتعريف</b><p><b class="en">el / la</b> = معروف • <b class="en">un / una</b> = غير معروف أو أول مرة.</p><p>غالبا -o مذكر و-a مؤنث. استثناءات: <span class="en">el mapa • el día • la mano • el agua</span></p></div>`,
+i:[['___ libro es nuevo.','el','libro مذكر ومعروف'],['___ mesa es grande.','la','mesa مؤنث ومعروف'],['Tengo ___ hermana.','una','hermana مؤنث وغير معروف'],['Quiero ___ café.','un','café مذكر وغير معروف'],['___ agua está fría.','el','agua مؤنثة لكنها تأخذ el لأنها تبدأ بـ a مشددة'],['Es ___ problema grande.','un','problema مذكر رغم النهاية a'],['___ mano es pequeña.','la','mano مؤنثة رغم النهاية o'],['Hay ___ mapa aquí.','un','mapa مذكر رغم النهاية a']]}};
+let Z=null;
+function arHome(){Z=null;const A=AR[S.l];$('v').innerHTML=`<button class="secondary" onclick="draw()">→ رجوع</button><div class="card hero"><div class="big en">${A.t}</div></div>${A.x}<button class="big2" onclick="arStart()">ابدأ التمرين (${A.i.length} سؤال)</button>`;window.scrollTo(0,0)}
+function arStart(){Z={q:shuf(AR[S.l].i),i:0,ok:0,fb:null};arR()}
+function arR(){const A=AR[S.l],q=Z.q[Z.i],f=Z.fb;$('v').innerHTML=`<div class="lt"><button class="x" onclick="arHome()">✕</button><div class="bar"><i style="width:${Z.i/Z.q.length*100}%"></i></div></div><div class="card"><div class="qs en" dir="ltr">${q[0].replace('___','<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>')}</div></div>`+A.o.map(o=>`<button class="opt ${f&&o[0]==q[1]?'ok':''} ${f&&f.c==o[0]&&!f.ok?'no':''}" ${f?'':`onclick="arPk('${o[0]}')"`}>${o[1]}</button>`).join('')+(f?`<div class="fb ${f.ok?'g':'r'}"><b>${f.ok?'ممتاز! ✓':'خطأ ✗'}</b><div>💡 ${q[2]}</div><button onclick="arNx()">متابعة</button></div>`:'')}
+function arPk(c){const ok=c==Z.q[Z.i][1];Z.fb={ok,c};beep(ok);rec0('mc',ok);if(ok)Z.ok++;arR()}
+function arNx(){Z.i++;if(Z.i<Z.q.length)return arR();const k='ar'+S.l,xp=5+Z.ok*2;S.gb[k]=Math.max(S.gb[k]||0,Z.ok);award(xp);$('v').innerHTML=`<div class="card hero" style="text-align:center"><div class="big">🎉 ${Z.ok}/${Z.q.length}</div><div class="stat">+${xp} XP</div></div><button class="big2" onclick="arHome()">متابعة</button>`}
+
+/* ===== LESSONS HUB: FULL TENSE LESSONS + GENERATED PRACTICE ===== */
+S.ls=S.ls||{};S.ui=S.ui||'ar';
+const TT={lessons:['الدروس','Lessons'],hubd:['اختر أي درس وتعلمه كاملا: القاعدة ثم الجداول ثم الكلمات ثم التدريب ثم اختبار الإتقان (80% للنجاح). كل الدروس مفتوحة.','Pick any lesson and master it: rule, tables, words, practice, then a mastery test (80% to pass). All lessons are open.'],back:['→ رجوع','← Back'],struct:['تركيب الجملة','Sentence structure'],when:['متى نستعمله؟','When to use it'],sig:['كلمات الإشارة','Signal words'],table:['جدول كل الضمائر','Table for all subjects'],err:['أخطاء شائعة','Common mistakes'],words:['الكلمات','Words'],ex:['أمثلة (اضغط للاستماع)','Examples (tap to listen)'],prac:['تدريب (12 سؤال)','Practice (12 questions)'],test:['اختبار الإتقان (15 سؤال)','Mastery test (15 questions)'],pick:['شنو بغيتي تتعلم؟ 🌍','What do you want to learn? 🌍'],pickd:['لكل لغة تقدم مستقل، وتقدر تبدل فأي وقت.','Each language has its own progress. Switch anytime.'],fillA:['أكمل بصيغة الفعل الصحيحة','Fill in the correct verb form'],fillN:['أكمل بصيغة النفي','Make it negative'],build:['رتّب الكلمات لتكوّن الجملة','Build the sentence'],askq:['كوّن سؤالا بترتيب الكلمات','Build the question'],which:['اختر الزمن المناسب','Choose the right tense'],not:['نفي','not'],mast:['🏆 أتقنت الدرس!','🏆 Lesson mastered!'],notyet:['تحتاج 80% لإتقان الدرس، حاول مجددا.','You need 80% to master it. Try again.'],more:['أدوات إضافية','More tools'],gb:['ورشة بناء الجمل','Sentence builder'],vb:['جداول الأفعال','Verb tables']};
+const tt=k=>TT[k][S.ui=='en'?1:0];
+const NAVL={lessons:['الدروس','Lessons'],path:['المسار','Path'],review:['مراجعة','Review'],dict:['قاموس','Words'],mine:['قاموسي','Mine'],me:['ملفي','Me'],verbs:['أفعال','Verbs']};
+const tUI=()=>{S.ui=S.ui=='en'?'ar':'en';save();draw()};
+const cap=t=>t[0].toUpperCase()+t.slice(1),pk=a=>a[Math.random()*a.length|0];
+const s3=p=>/^(he|she|it)$/.test(p),be=p=>p=='I'?'am':s3(p)?'is':'are',hv=p=>s3(p)?'has':'have';
+const EV=[['work','works','worked','worked','working','يعمل','at a bank'],['eat','eats','ate','eaten','eating','يأكل','an apple'],['go','goes','went','gone','going','يذهب','to school'],['read','reads','read','read','reading','يقرأ','a book'],['write','writes','wrote','written','writing','يكتب','a letter'],['drink','drinks','drank','drunk','drinking','يشرب','tea'],['play','plays','played','played','playing','يلعب','football'],['study','studies','studied','studied','studying','يدرس','English'],['watch','watches','watched','watched','watching','يشاهد','a movie'],['buy','buys','bought','bought','buying','يشتري','a car'],['see','sees','saw','seen','seeing','يرى','my friend'],['make','makes','made','made','making','يصنع','dinner']];
+const EN_T={
+ps:{a:(p,v)=>s3(p)?v[1]:v[0],n:(p,v)=>(s3(p)?'does':'do')+' not '+v[0],x:p=>s3(p)?'Does':'Do',m:(p,v)=>v[0]},
+pc:{a:(p,v)=>be(p)+' '+v[4],n:(p,v)=>be(p)+' not '+v[4],x:p=>cap(be(p)),m:(p,v)=>v[4]},
+pa:{a:(p,v)=>v[2],n:(p,v)=>'did not '+v[0],x:()=>'Did',m:(p,v)=>v[0]},
+wi:{a:(p,v)=>'will '+v[0],n:(p,v)=>'will not '+v[0],x:()=>'Will',m:(p,v)=>v[0]},
+gt:{a:(p,v)=>be(p)+' going to '+v[0],n:(p,v)=>be(p)+' not going to '+v[0],x:p=>cap(be(p)),m:(p,v)=>'going to '+v[0]},
+pf:{a:(p,v)=>hv(p)+' '+v[3],n:(p,v)=>hv(p)+' not '+v[3],x:p=>cap(hv(p)),m:(p,v)=>v[3]}};
+const ctr=g=>[g,g.replace(/(do|does|did|is|are|has|have) not/,(m,a)=>({do:"don't",does:"doesn't",did:"didn't",is:"isn't",are:"aren't",has:"hasn't",have:"haven't"})[a]).replace('will not',"won't")];
+const ESV=[['hablar','يتكلم','to speak','español'],['trabajar','يعمل','to work','en un banco'],['comer','يأكل','to eat','una manzana'],['vivir','يعيش','to live','en Madrid'],['beber','يشرب','to drink','agua'],['escribir','يكتب','to write','una carta'],['estudiar','يدرس','to study','inglés'],['comprar','يشتري','to buy','un coche'],['abrir','يفتح','to open','la puerta'],['ir','يذهب','to go','a la escuela'],['hacer','يفعل / يصنع','to do / make','la cena'],['tener','يملك','to have','hambre']];
+const ESI={ir:{pr:['voy','vas','va','vamos','van'],pt:['fui','fuiste','fue','fuimos','fueron']},hacer:{pr:['hago','haces','hace','hacemos','hacen'],pt:['hice','hiciste','hizo','hicimos','hicieron']},tener:{pr:['tengo','tienes','tiene','tenemos','tienen'],pt:['tuve','tuviste','tuvo','tuvimos','tuvieron']}};
+const ESX={yo:0,'tú':1,'él':2,ella:2,nosotros:3,ellos:4};
+const conj=(v,t,i)=>{const I=ESI[v[0]];if(I&&t!='ia')return I[t][i];const b=v[0].slice(0,-2),k=v[0].slice(-2),a=k=='ar';if(t=='pr')return b+['o',a?'as':'es',a?'a':'e',a?'amos':k=='er'?'emos':'imos',a?'an':'en'][i];if(t=='pt')return b+(a?['é','aste','ó','amos','aron']:['í','iste','ió','imos','ieron'])[i];return ['voy','vas','va','vamos','van'][i]+' a '+v[0]};
+const GN={
+en:{pr:['I','you','he','she','it','we','they'],tl:['ps','pc','pa','wi','gt','pf'],vb:EV,qa:1,S:(p,f)=>f?cap(p):p,rest:v=>v[6],base:v=>v[0],adv:{ps:'every day',pc:'now',pa:'yesterday',wi:'tomorrow',gt:'next week',pf:'today'},
+grp:(t,p,v,f)=>EN_T[t][f],alt:ctr,bq:(t,p,v,R,ad)=>`${EN_T[t].x(p)} ${p} ${EN_T[t].m(p,v)} ${R} ${ad}?`,qs:(t,p,v)=>`${EN_T[t].x(p)} ${p} ${EN_T[t].m(p,v)}?`},
+es:{pr:['yo','tú','él','ella','nosotros','ellos'],tl:['pr','pt','ia'],vb:ESV,qa:0,S:(p,f)=>f?cap(p):p,rest:v=>v[3],base:v=>v[0],adv:{pr:'todos los días',pt:'ayer',ia:'mañana'},
+grp:(t,p,v,f)=>(f=='n'?'no ':'')+conj(v,t,ESX[p]),alt:x=>[x],bq:(t,p,v,R,ad)=>`${cap(p)} ${conj(v,t,ESX[p])} ${R} ${ad}.`}};
+GN.en.grp=(t,p,v,f)=>EN_T[t][f=='n'?'n':'a'](p,v);
+const LS={
+en:[
+{k:'ps',i:'⚙️',n:['المضارع البسيط','Present Simple'],f:['S + V1 (+s/es: he, she, it)','S + do/does + not + V1','Do/Does + S + V1 ?'],u:['العادات والروتين والحقائق والجداول','Habits, routines, facts and schedules'],sg:'every day, usually, always, never, on Mondays',er:['بعد does نستعمل الفعل الأساسي: <b>Does she works</b> ✗ ← Does she work ✓','After does use the base verb: <b>Does she works</b> ✗ → Does she work ✓'],sp:'study→studies • watch→watches • go→goes'},
+{k:'pc',i:'🔄',n:['المضارع المستمر','Present Continuous'],f:['S + am/is/are + V-ing','S + am/is/are + not + V-ing','Am/Is/Are + S + V-ing ?'],u:['شيء يحدث الآن أو مؤقتا','Happening now or temporary'],sg:'now, at the moment, right now, today',er:['لا نستعمل المستمر مع know / like / want: <b>I am knowing</b> ✗','No continuous with know / like / want: <b>I am knowing</b> ✗'],sp:'make→making • run→running • study→studying'},
+{k:'pa',i:'⏪',n:['الماضي البسيط','Past Simple'],f:['S + V2','S + did + not + V1','Did + S + V1 ?'],u:['حدث انتهى في الماضي بوقت محدد','A finished action at a specific past time'],sg:'yesterday, last week, ago, in 2020',er:['بعد did نستعمل الفعل الأساسي: <b>Did she went</b> ✗ ← Did she go ✓','After did use the base verb: <b>Did she went</b> ✗ → Did she go ✓'],sp:'work→worked • study→studied • go→went (irregular)'},
+{k:'wi',i:'🔮',n:['المستقبل بـ will','Future with will'],f:['S + will + V1','S + will not (won\'t) + V1','Will + S + V1 ?'],u:['قرار لحظي، وعد، توقع','Spontaneous decisions, promises, predictions'],sg:'tomorrow, soon, next week, I think',er:['لا s ولا to بعد will: <b>She will goes</b> ✗','No -s or to after will: <b>She will goes</b> ✗'],sp:'will = 0 changes for all subjects'},
+{k:'gt',i:'🗓️',n:['المستقبل بـ going to','Future with going to'],f:['S + am/is/are + going to + V1','S + am/is/are + not + going to + V1','Am/Is/Are + S + going to + V1 ?'],u:['خطة مسبقة أو توقع بدليل','A prior plan or a prediction with evidence'],sg:'tomorrow, next year, look at the clouds',er:['لا تنس to: <b>I am going eat</b> ✗ ← I am going to eat ✓','Do not forget to: <b>I am going eat</b> ✗ → I am going to eat ✓'],sp:'be + going to + base verb'},
+{k:'pf',i:'🧭',n:['المضارع التام','Present Perfect'],f:['S + have/has + V3','S + have/has + not + V3','Have/Has + S + V3 ?'],u:['خبرة حياتية، نتيجة حاضرة، أو حدث لم ينته مع for/since','Life experience, present result, or unfinished action with for/since'],sg:'already, yet, ever, never, just, for, since',er:['لا نستعمل وقتا ماضيا محددا: <b>I have seen it yesterday</b> ✗ ← I saw it yesterday ✓','No finished-time word: <b>I have seen it yesterday</b> ✗ → I saw it yesterday ✓'],sp:'V3: eat→eaten • go→gone • write→written'}],
+es:[
+{k:'pr',i:'⚙️',n:['المضارع (Presente)','Present (Presente)'],f:['yo -o • tú -as/-es • él/ella -a/-e','no + verbo conjugado','(بدون تغيير الترتيب) ¿...?'],u:['العادات والحاضر والمستقبل القريب','Habits, the present and the near future'],sg:'todos los días, siempre, ahora, nunca',er:['لا تنس تصريف الفعل: <b>Yo hablar</b> ✗ ← Yo hablo ✓','Do not leave the infinitive: <b>Yo hablar</b> ✗ → Yo hablo ✓'],sp:'-ar: hablo • -er: como • -ir: vivo'},
+{k:'pt',i:'⏪',n:['الماضي (Pretérito)','Past (Pretérito)'],f:['yo -é/-í • tú -aste/-iste • él -ó/-ió','no + verbo في الماضي','(نفس الترتيب) ¿...?'],u:['حدث انتهى في الماضي','A finished action in the past'],sg:'ayer, anoche, la semana pasada, hace dos días',er:['ser وir لهما نفس الماضي: <b>fui</b>','ser and ir share the same preterite: <b>fui</b>'],sp:'ir: fui, fuiste, fue • hacer: hice, hiciste, hizo'},
+{k:'ia',i:'🗓️',n:['المستقبل (ir a + فعل)','Future (ir a + verb)'],f:['voy/vas/va/vamos/van + a + infinitivo','no + voy a + infinitivo','(نفس الترتيب) ¿...?'],u:['خطط وأشياء ستحدث قريبا','Plans and things about to happen'],sg:'mañana, pronto, la próxima semana',er:['لا تنس a: <b>Voy comer</b> ✗ ← Voy a comer ✓','Do not forget a: <b>Voy comer</b> ✗ → Voy a comer ✓'],sp:'ir a + infinitive'}]};
+const ui1=()=>S.ui=='en'?1:0;
+function genQ(t,n,mix){const g=GN[S.l],o=[];while(o.length<n){const p=pk(g.pr),v=pk(g.vb),tn=mix?pk(g.tl):t,ty=pk(['a','n','b','m']),R=g.rest(v),ad=g.adv[tn],bs=g.S(p,1),bw=g.base(v),mt=LS[S.l].find(z=>z.k==tn),x=`${tt('sig')}: ${mt.sg} — ${mt.u[ui1()]}`;
+if(ty=='a')o.push({t:'ty',q:`${tt('fillA')}<br><span class="en">${bs} ___ (${bw}) ${R} ${ad}.</span>`,a:g.alt(g.grp(tn,p,v,'a')),x});
+else if(ty=='n')o.push({t:'ty',q:`${tt('fillN')}<br><span class="en">${bs} ___ (${tt('not')} + ${bw}) ${R} ${ad}.</span>`,a:g.alt(g.grp(tn,p,v,'n')),x});
+else if(ty=='b'){const z=g.bq(tn,p,v,R,ad);o.push({t:'or',q:`${tt(g.qa?'askq':'build')}<br><span class="en">${bs} · ${bw} · ${R} · ${ad}</span>`,a:[z],p:shuf(z.split(' ')),x})}
+else{const c=g.grp(tn,p,v,'a'),ws=[...new Set(shuf(g.tl.filter(z=>z!=tn)).map(z=>g.grp(z,p,v,'a')).filter(z=>z!=c))].slice(0,3),op=shuf([...new Set([c,...ws,...(S.l=='es'?[g.base(v)]:[])])]);o.push({t:'mc',q:`${tt('which')}<br><span class="en">${bs} ___ ${R} ${ad}.</span>`,o:op,c:op.indexOf(c),x})}}
+return o}
+function lsRun(k,test){const q=test?shuf(genQ(k,10).concat(genQ(k,5,1))):genQ(k,12);L={u:{id:-5,v:[],e:[],cb:a=>{const key=S.l+':'+k,z=S.ls[key]=S.ls[key]||{};if(test){z.b=Math.max(z.b||0,Math.round(a*100));if(a>=.8)z.m=1;setTimeout(()=>alert(a>=.8?tt('mast'):tt('notyet')),60)}else z.p=1;save()}},q,i:0,h:5,ok:0,fb:null,sel:null,ans:[],wr:new Set(),t0:Date.now()};lessonUI()}
+function lessonsV(){const g=GN[S.l];return `<div class="card hero"><div class="big">🎓 ${tt('lessons')} • ${C().n}</div><p class="muted">${tt('hubd')}</p></div>`+LS[S.l].map(m=>{const z=S.ls[S.l+':'+m.k]||{};return `<div class="card unit" onclick="lsOpen('${m.k}')"><div class="ic">${m.i}</div><div style="flex:1"><b>${m.n[ui1()]}</b><div class="muted en">${m.f[0]}</div></div><div>${z.m?'🏆':z.p?'✅':''}</div></div>`}).join('')+`<div class="muted" style="margin:14px 4px 0">${tt('more')}</div><div class="card unit" onclick="gbHome()"><div class="ic">🧱</div><div style="flex:1"><b>${tt('gb')}</b></div></div><div class="card unit" onclick="arHome()"><div class="ic">🔤</div><div style="flex:1"><b class="en">${AR[S.l].t}</b></div></div><div class="card unit" onclick="go('verbs')"><div class="ic">📋</div><div style="flex:1"><b>${tt('vb')}</b></div></div>`}
+function lsOpen(k){const m=LS[S.l].find(z=>z.k==k),g=GN[S.l],z=S.ls[S.l+':'+k]||{},u=ui1(),v0=g.vb[0],sen=(t,p,v,f)=>`${g.S(p,1)} ${g.grp(t,p,v,f)} ${g.rest(v)} ${g.adv[t]}.`;
+const ex=[...['a','a','a','n','n'].map(f=>{const p=pk(g.pr),v=pk(g.vb);return sen(k,p,v,f)}),...(g.qa?[(()=>{const p=pk(g.pr),v=pk(g.vb);return g.bq(k,p,v,g.rest(v),g.adv[k])})()]:[])];
+const tb=g.pr.map(p=>`<tr><td>${g.S(p,1)}</td><td class="pr">${g.grp(k,p,v0,'a')}</td><td>${g.grp(k,p,v0,'n')}</td>${g.qs?`<td>${g.qs(k,p,v0)}</td>`:''}</tr>`).join('');
+const wd2=g.vb.map(v=>S.l=='en'?`<div class="w"><span class="en"><b>${v[0]}</b> · ${v[1]} · ${v[2]} · ${v[3]} · ${v[4]}</span><span class="muted">${u?'':v[5]}</span><button class="sp" onclick="say('${v[0]}')">🔊</button></div>`:`<div class="w"><span class="en"><b>${v[0]}</b> — ${u?v[2]:v[1]}</span><button class="sp" onclick="say('${v[0]}')">🔊</button></div>`).join('');
+$('v').innerHTML=`<button class="secondary" onclick="go('lessons')">${tt('back')}</button><div class="card hero"><div class="big">${m.i} ${m.n[u]}</div><div class="muted">${z.p?'✅':'⬜'} ${tt('prac')} • ${z.m?'🏆':'⬜'} ${tt('test')} (${z.b||0}%)</div></div>
+<div class="card"><b>🧩 ${tt('struct')}</b><div class="en" style="line-height:2.1">${m.f.map((x,i)=>`<div><span class="pill">${['+','−','?'][i]}</span> ${x}</div>`).join('')}</div></div>
+<div class="card"><b>🎯 ${tt('when')}</b><p>${m.u[u]}</p><p class="muted">${tt('sig')}: <b class="en">${m.sg}</b></p></div>
+<div class="card"><b>📋 ${tt('table')}</b><div class="tw" dir="ltr"><table><tr class="muted"><td></td><td>+</td><td>−</td>${g.qs?'<td>?</td>':''}</tr>${tb}</table></div></div>
+<div class="card"><b>🔊 ${tt('ex')}</b>${ex.map(e=>`<div class="w"><span class="en">${e}</span><button class="sp" onclick="say('${e}')">🔊</button></div>`).join('')}</div>
+<div class="card"><b>⚠️ ${tt('err')}</b><p>${m.er[u]}</p><p class="muted en">${m.sp}</p></div>
+<div class="card"><b>📖 ${tt('words')} (${g.vb.length})</b>${S.l=='en'?'<p class="muted en">V1 · V1+s · V2 · V3 · V-ing</p>':''}${wd2}</div>
+<button class="big2" onclick="lsRun('${k}',0)">${tt('prac')}</button><button class="big2" style="background:var(--b);color:#1b1f3a;border-bottom-color:rgba(0,0,0,.25)" onclick="lsRun('${k}',1)">${tt('test')}</button>`;window.scrollTo(0,0)}
 
 /* ===== LESSON ENGINE ===== */
 function build(u){const pool=C().U.flatMap(x=>x.v).concat(Q().my),q=[],v=shuf(u.v);
@@ -239,8 +359,8 @@ if(ok)L.ok++;else{L.h--;if(q.w)addErr(q.w)}
 if(q.s)say(q.s);else if(ok&&q.t!='mc'&&q.t!='ty')say(c);
 lessonUI()}
 function next(){if(L.h<=0)return end(false);L.i++;L.sel=null;L.ans=[];L.fb=null;if(L.i>=L.q.length)return end(true);lessonUI()}
-function end(win){addT();const n=L.q.length,acc=L.ok/n,id=L.u.id;let xp=0,st=0;
-if(win){xp=10+L.ok*2;st=acc>=.9?3:acc>=.7?2:1;if(id>=0)Q().done[id]=Math.max(Q().done[id]||0,st);if(id==-2&&S.dc!==T()){xp+=20;S.dc=T()}award(xp)}
+function end(win){addT();const cb=L.u.cb;const n=L.q.length,acc=L.ok/n,id=L.u.id;let xp=0,st=0;
+if(win){xp=10+L.ok*2;st=acc>=.9?3:acc>=.7?2:1;if(id>=0)Q().done[id]=Math.max(Q().done[id]||0,st);if(id==-2&&S.dc!==T()){xp+=20;S.dc=T()}award(xp);if(cb)cb(acc)}
 L=null;
 $('v').innerHTML=`<div class="card hero" style="text-align:center"><div class="big">${win?'🎉 أحسنت!':'💔 نفدت القلوب'}</div>${win?`<div class="stat">+${xp} XP</div><div style="font-size:32px">${'⭐'.repeat(st)}</div><p class="muted">الدقة ${Math.round(acc*100)}%</p>`:`<p class="muted">لا بأس، الأخطاء طريق التعلم. حاول مرة أخرى.</p>`}</div><button class="big2" onclick="${win?'draw()':`start(${id})`}">${win?'متابعة':'إعادة المحاولة'}</button>`}
 function quit(){if(!L||confirm('الخروج؟ سيضيع تقدم هذا الدرس.')){addT();draw()}}
